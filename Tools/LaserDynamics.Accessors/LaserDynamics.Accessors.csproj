@@ -43,7 +43,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LaserDynamics.Common\LaserDynamics.Common.csproj">
+    <ProjectReference Include="..\..\LaserDynamics.Common\LaserDynamics.Common.csproj">
       <Project>{ddada084-96a5-4fb2-943f-02ac8ba97aea}</Project>
       <Name>LaserDynamics.Common</Name>
     </ProjectReference>

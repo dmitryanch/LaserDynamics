@@ -14,15 +14,15 @@ namespace LaserDynamics.Accessor
         public IList<ICalculation> Load()
         {
             var _Result = new List<ICalculation>();
-            foreach (string _command in Directory.GetFiles("", "*LaserModel.dll"))
+            foreach (string assemblyFile in Directory.GetFiles("", "*LaserModel.dll"))
                 try
                 {
-                    Assembly _assm;
-                    _assm = Assembly.LoadFrom(_command);
-
-                    foreach (Type _type in _assm.GetTypes())
-                        if (_type.GetInterface("ICalculation") == typeof(ICalculation))
-                            _Result.Add((ICalculation)Activator.CreateInstance(_type));
+                    Assembly assembly = Assembly.LoadFrom(assemblyFile);
+                    var types = assembly.GetTypes().Where(t => t.GetInterface("ICalculation") == typeof(ICalculation)).Select(t => (ICalculation)Activator.CreateInstance(t));
+                    _Result.AddRange(types);
+                    //foreach (Type _type in assembly.GetTypes())
+                    //    if (_type.GetInterface("ICalculation") == typeof(ICalculation))
+                    //        _Result.Add((ICalculation)Activator.CreateInstance(_type));
                 }
                 catch (Exception ex)
                 {

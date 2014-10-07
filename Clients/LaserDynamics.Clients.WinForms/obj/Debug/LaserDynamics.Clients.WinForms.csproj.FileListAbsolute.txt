@@ -58,3 +58,29 @@ F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\Lase
 F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.Main.resources
 F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.Properties.Resources.resources
 F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.csproj.GenerateResource.Cache
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.Main.resources
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.Properties.Resources.resources
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.csproj.GenerateResource.Cache
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.exe
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Clients.WinForms.exe.config
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Clients.WinForms.exe
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Clients.WinForms.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.pdb
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Clients.WinForms.exe.config
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.exe
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.pdb
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Clients.WinForms.exe
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Clients.WinForms.pdb
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.Main.resources
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.Properties.Resources.resources
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.csproj.GenerateResource.Cache
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.dll
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.pdb

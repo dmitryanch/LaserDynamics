@@ -25,15 +25,14 @@ namespace LaserDynamics.Clients.WinForms
             LoadCalculations();
         }
 
-        public void StartCalculation(string calcName)
+        public async Task StartCalculation(string calcName)
         {
             //if (!_view.IsValid()) // реализовать методом презентера
             //return;
-            //var calc = OpenCalculations.FirstOrDefault(c => c.Name == calcName);
             var calc = CurrentCalculation;
             if (calc == null)
                 throw new NullReferenceException("Не найдено вычисление с именем '" + calcName + "'.");
-            Threads[calcName].RunWorkerAsync();
+            await Task.Factory.StartNew(() => calc.Workspace.Calculate());
         }
         void CalculateIt()
         {
@@ -49,7 +48,6 @@ namespace LaserDynamics.Clients.WinForms
         }
         public void StopCalculation(string calcName)
         {
-            Threads[calcName].CancelAsync();
             CurrentCalculation.Workspace.OnCalculationStopped();
         }
         public void ShowResults(string calcName)
@@ -61,14 +59,12 @@ namespace LaserDynamics.Clients.WinForms
             var calc = OpenCalculations.FirstOrDefault(c => c.Name == calcName);
             OpenCalculations.Remove(calc);
             CurrentCalculation.Workspace.OnCalculationStopped();
-            Threads.Remove(calcName);
         }
 
         public IList<ICalculation> OpenCalculations { get; set; }
         public IList<ICalculation> CalculationTypes { get; set; }
         public ICalculation DefaultCalculation { get; set; }
         public ICalculation CurrentCalculation { get; set; }
-        public IDictionary<string,BackgroundWorker> Threads { get; set; }
         IList<KeyValuePair<string, Type>> Types { get; set; }
         IList<KeyValuePair<string, Type>> OpenTypes { get; set; }
 
@@ -187,33 +183,6 @@ namespace LaserDynamics.Clients.WinForms
             var newCalc = DefaultCalculation.GenerateNewCalculation();
             newCalc.Name = calcName;
             OpenCalculations.Add(newCalc);
-            var worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.WorkerSupportsCancellation = true;
-            worker.DoWork += (s, e) => CurrentCalculation.Workspace.Calculate(); //CalculateIt();
-            worker.ProgressChanged += (s, e) =>
-                {
-                    //e.ProgressPercentage;
-                };
-            worker.RunWorkerCompleted += (s,e) =>
-                {
-                    if (e.Error != null)
-                    {
-                        //MessageBox.Show("Error: " + e.Error.Message);
-                        //OpenCalculations.FirstOrDefault(c => c.Name == calcName).
-                    }
-                    else if(e.Cancelled)
-                    {
-                        //MessageBox.Show("Cancelled.");
-                    }
-                    else
-                    {
-                        //MessageBox.Show("Work is succesefully performed.");
-                    }
-                };
-            if (Threads == null)
-                Threads = new Dictionary<string,BackgroundWorker>();
-            Threads.Add(calcName, worker);
         }
         public void DeleteCalculation(string calcName)
         {
@@ -229,16 +198,6 @@ namespace LaserDynamics.Clients.WinForms
             newCalc.Name = one.Name;
             CurrentCalculation = newCalc;
             OpenCalculations.Add(newCalc);
-        }
-    }
-
-    public static class CalculationExtensions
-    {
-        public static T GenerateNewCalculation<T>(this T calc) where T : ICalculation
-        {
-            var ctor = calc.GetType().GetConstructor(new Type[0]);
-            var obj = (T)ctor.Invoke(new object[0]);
-            return obj;
         }
     }
 }

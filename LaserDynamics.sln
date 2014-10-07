@@ -1,17 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IterationExample", "IterationExample\IterationExample.csproj", "{9346BB05-6261-4E46-9AB8-DDF97CA1B502}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Clients.WinForms", "Clients\LaserDynamics.Clients.WinForms\LaserDynamics.Clients.WinForms.csproj", "{C1D22563-26D0-4B02-AF9C-F210A4C4A0D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Clients.WinForms", "LaserDynamics.Clients.WinForms\LaserDynamics.Clients.WinForms.csproj", "{C1D22563-26D0-4B02-AF9C-F210A4C4A0D2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Accessors", "LaserDynamics.Accessors\LaserDynamics.Accessors.csproj", "{6845641D-9DE4-4EE6-8DC4-E11063FFDC43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Accessors", "Tools\LaserDynamics.Accessors\LaserDynamics.Accessors.csproj", "{6845641D-9DE4-4EE6-8DC4-E11063FFDC43}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Common", "LaserDynamics.Common\LaserDynamics.Common.csproj", "{DDADA084-96A5-4FB2-943F-02AC8BA97AEA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Calculations", "Calculations", "{5DD48813-C69A-4B07-AB6D-376976EC9931}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Calculations.FullMaxvellBlockSsfm", "MaxvellBlockSSFM\LaserDynamics.Calculations.FullMaxvellBlockSsfm.csproj", "{729BF411-0329-40D6-9311-C7F8B3AE967C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserDynamics.Calculations.FMBSsfmLaserModel", "Calculations\FMBSSFM\LaserDynamics.Calculations.FMBSsfmLaserModel.csproj", "{729BF411-0329-40D6-9311-C7F8B3AE967C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{954ABA77-ACE0-42EF-A870-3962E0345E1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{1D077D7F-A4A4-4539-9F58-94D1BE316390}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +21,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9346BB05-6261-4E46-9AB8-DDF97CA1B502}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9346BB05-6261-4E46-9AB8-DDF97CA1B502}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9346BB05-6261-4E46-9AB8-DDF97CA1B502}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9346BB05-6261-4E46-9AB8-DDF97CA1B502}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C1D22563-26D0-4B02-AF9C-F210A4C4A0D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1D22563-26D0-4B02-AF9C-F210A4C4A0D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1D22563-26D0-4B02-AF9C-F210A4C4A0D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,5 +43,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{729BF411-0329-40D6-9311-C7F8B3AE967C} = {5DD48813-C69A-4B07-AB6D-376976EC9931}
+		{6845641D-9DE4-4EE6-8DC4-E11063FFDC43} = {954ABA77-ACE0-42EF-A870-3962E0345E1F}
+		{C1D22563-26D0-4B02-AF9C-F210A4C4A0D2} = {1D077D7F-A4A4-4539-9F58-94D1BE316390}
 	EndGlobalSection
 EndGlobal

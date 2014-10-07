@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace LaserDynamics.Common
 {
@@ -13,15 +14,14 @@ namespace LaserDynamics.Common
         IList<ICalculation> CalculationTypes { get; set; }
         ICalculation DefaultCalculation { get; set; }
         ICalculation CurrentCalculation { get; set; }
-        IDictionary<string,BackgroundWorker> Threads { get; set; }
-
+        
         void LoadCalculations();
         void SaveCalculations();
 
         void CreateDefaultCalculation(string calcName);
         void DeleteCalculation(string calcName);
 
-        void StartCalculation(string calcName);
+        Task StartCalculation(string calcName);
         void ResumeCalculation(string calcName);
         void StopCalculation(string calcName);
         void ShowResults(string calcName);

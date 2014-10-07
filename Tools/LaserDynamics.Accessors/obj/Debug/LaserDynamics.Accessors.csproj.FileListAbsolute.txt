@@ -12,3 +12,17 @@ F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynami
 F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
 F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.dll
 F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.pdb

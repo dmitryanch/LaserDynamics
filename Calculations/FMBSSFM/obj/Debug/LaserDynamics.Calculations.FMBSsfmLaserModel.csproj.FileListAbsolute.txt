@@ -1,0 +1,7 @@
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\bin\Debug\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\bin\Debug\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\obj\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\bin\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.dll
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\bin\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.pdb
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\obj\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.dll
+C:\Projects\GitHub\LaserDynamics\Calculations\FMBSSFM\obj\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.pdb

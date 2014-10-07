@@ -16,3 +16,10 @@ F:\С Sharp\Projects\LaserDynamics\MaxvellBlockSSFM\bin\Debug\LaserDynamics.Comm
 F:\С Sharp\Projects\LaserDynamics\MaxvellBlockSSFM\obj\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.csprojResolveAssemblyReference.cache
 F:\С Sharp\Projects\LaserDynamics\MaxvellBlockSSFM\obj\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.dll
 F:\С Sharp\Projects\LaserDynamics\MaxvellBlockSSFM\obj\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.pdb
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\obj\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\obj\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.dll
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\obj\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.pdb
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\bin\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.dll
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\bin\Debug\LaserDynamics.Calculations.FullMaxvellBlockSsfm.pdb
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\bin\Debug\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\MaxvellBlockSSFM\bin\Debug\LaserDynamics.Common.pdb

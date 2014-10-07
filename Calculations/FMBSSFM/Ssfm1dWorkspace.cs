@@ -69,7 +69,6 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         Stopwatch normtimer = new Stopwatch();
         #endregion
         #region Private Methods
-
         void Set(Complex[] from, Complex[] to)
         {
             for (int i = 0; i < from.Length; i++)
@@ -161,6 +160,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         public event EventHandler OnCalculationFinish;
         public event EventHandler OnCalculationStart;
         public event EventHandler OnCalculationError;
+        public event EventHandler OnCalculationReport;
         #endregion
         #region Public Methods
         void SetParameters()
@@ -216,6 +216,9 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         {
             try
             {
+                Error = null;
+                Stopped = false;
+                Report = 0;
                 sumtimer.Reset();
                 ffttimer.Reset();
                 normtimer.Reset();
@@ -225,7 +228,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 SetParameters();
                 for (int q = 0; q < Nt; q++)
                 {
-                    if (CalculationCancelled)
+                    if (Stopped)
                         break;
                     ffttimer.Start();
                     Ef = Fourier.FFT(E);
@@ -310,17 +313,31 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                     E = Ec;
                     P = Pc;
                     D = Dc;
+
+                    var newReport = (int)Math.Floor((double)q/Nt*100);
+                    if (newReport != Report)    //  && newReport%5 == 0
+                    {
+                        if (OnCalculationReport != null)
+                        {
+                            OnCalculationReport(this, new EventArgs());
+                        }
+                        Report = newReport;
+                    }
+                }
+                sumtimer.Stop();
+                if (OnCalculationFinish != null)
+                {
+                    OnCalculationFinish(this, new EventArgs());
                 }
             }
             catch (Exception ex)
             {
+                Error = ex.Message;     // Как адекватно выводить здесь сообщение об ошибке?
                 if (OnCalculationError != null)
+                {
                     OnCalculationError(this, new EventArgs());
+                }
             }
-            sumtimer.Stop();
-            if (OnCalculationFinish != null)
-                OnCalculationFinish(this, new EventArgs());
-            CalculationCancelled = false;
         }
         public long[] GetStats()
         {
@@ -329,10 +346,12 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         public void GetResults()
         {        }
         #endregion
-        bool CalculationCancelled = false;
+        public bool Stopped {get;set;}
+        public string Error { get; set; }
+        public int Report { get; set; }
         public void OnCalculationStopped()
         {
-            CalculationCancelled = true;
+            Stopped = true;
         }
         public ICalculation Parent { get; set; }
     }

@@ -22,7 +22,7 @@ namespace LaserDynamics.Clients.WinForms
             InitializeComponent();
             _presenter = new Presenter();
 
-            StartBtn.Click += (s, e) => _presenter.StartCalculation(CalculationsTabControl.SelectedTab.Name);
+            StartBtn.Click += async (s, e) => await _presenter.StartCalculation(CalculationsTabControl.SelectedTab.Name);
             ResumeBtn.Click += (s, e) => _presenter.ResumeCalculation(CalculationsTabControl.SelectedTab.Name);
             StopBtn.Click += (s, e) => _presenter.StopCalculation(CalculationsTabControl.SelectedTab.Name);
             ResultsBtn.Click += (s, e) => _presenter.ShowResults(CalculationsTabControl.SelectedTab.Name);
@@ -124,7 +124,7 @@ namespace LaserDynamics.Clients.WinForms
         {
             foreach (var btn in btns)
             {
-                btn.Enabled = !btn.Enabled;
+                btn.SetEnableInvoke(!btn.Enabled);
                 //string path = btn.Name + (btn.Enabled ? "Enable" : "Disable") + ".png";
                 //btn.Image = new Bitmap(path);
             }
@@ -181,36 +181,49 @@ namespace LaserDynamics.Clients.WinForms
             CalculationsTabControl.SelectedTab.Controls.Add(StopBtn);
             bigTable.Controls.Add(StopBtn);
             
-            StartBtn.Click += (s, e) =>
+            StartBtn.Click += async (s, e) =>
             {
                 ReverseButtonsState(StartBtn, StopBtn);
-                _presenter.StartCalculation(name);
                 CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"].Text = "Started...";
+                await _presenter.StartCalculation(name);
             };
             StopBtn.Click += (s, e) =>
             {
-                //ReverseButtonsState(StartBtn, StopBtn);
                 _presenter.StopCalculation(name);
             };
-            _presenter.Threads[name].RunWorkerCompleted += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.OnCalculationFinish += (s, e) =>
                 {
-                    if (e.Error != null)
+                    var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name);
+                    if (calc.Workspace.Error != null)
                     {
-                        CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"].Text = "Error: " + e.Error.Message;
+                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"]as Label).SetTextInvoke("Error: " + calc.Workspace.Error);
                     }
-                    else if (e.Cancelled)
+                    else if (calc.Workspace.Stopped)
                     {
-                        CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"].Text = "Stopped.";
+                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Stopped.");
                     }
                     else
                     {
-                        var stats = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.GetStats();
-                        CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"].Text = "Succesfully performed " + string.Join(", ", stats);
+                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Succesefully performed: " + string.Join(", ", calc.Workspace.GetStats().Select(st => st.ToString() + " ms")));
+                        // реализовать отображение результатов
                     }
                     ReverseButtonsState(StartBtn, StopBtn);
                 };
+            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.OnCalculationError += (s, e) =>
+            {
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name);
+                if (calc.Workspace.Error != null)
+                {
+                    (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Error: " + calc.Workspace.Error);
+                }
+                ReverseButtonsState(StartBtn, StopBtn);
+            };
+            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.OnCalculationReport += (s, e) =>
+            {
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name);
+                (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Running: " + calc.Workspace.Report + "%");
+            };
             
-            //_presenter.CurrentCalculation.Workspace.OnCalculationFinish += ;
             //var ResumeBtn = CreateButton("Resume");
             //ResumeBtn.Click += (s, e) => _presenter.ResumeCalculation(name);
             //bigTable.Controls.Add(ResumeBtn, 2, 0);
@@ -418,47 +431,45 @@ namespace LaserDynamics.Clients.WinForms
             value = value.Trim();
             var view = _presenter.CurrentCalculation.View;
 
-            try
+            switch (attr.Type)
             {
-                switch (attr.Type)
-                {
-                    case DataType.Bool:
-                        {
-                            bool val = bool.Parse(value);
-                            prop.SetValue(view, val, null);
-                            break;
-                        }
-                    case DataType.Double:
-                        {
-                            double val;
-                            if (!double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out val)
-                                || !(val > attr.MoreThan && val < attr.LessThan))
-                                throw new ArgumentException(attr.Title + "-" + attr.ErrorText);
-                            prop.SetValue(view, val, null);
-                            break;
-                        }
-                    case DataType.Integer:
-                        {
-                            int val;
-                            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out val)
-                               || !(val > attr.MoreThan && val < attr.LessThan))
-                                throw new ArgumentException(attr.Title + "-" + attr.ErrorText);
-                            prop.SetValue(view, val, null);
-                            break;
-                        }
-                    default:
-                        {
-                            //if(!attr.DiscreteValues.Contains(value))
-                            //    string ErrorText;
-                            prop.SetValue(view, value, null);
-                        }
+                case DataType.Bool:
+                    {
+                        bool val = bool.Parse(value);
+                        prop.SetValue(view, val, null);
                         break;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return;
+                    }
+                case DataType.Double:
+                    {
+                        double val;
+                        if (!double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out val)
+                            || !(val > attr.MoreThan && val < attr.LessThan))
+                        {
+                            MessageBox.Show(attr.Title + " - " + attr.ErrorText);
+                            break;
+                        }
+                        prop.SetValue(view, val, null);
+                        break;
+                    }
+                case DataType.Integer:
+                    {
+                        int val;
+                        if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out val)
+                           || !(val > attr.MoreThan && val < attr.LessThan))
+                        {
+                            MessageBox.Show(attr.Title + " - " + attr.ErrorText);
+                            break;
+                        }
+                        prop.SetValue(view, val, null);
+                        break;
+                    }
+                default:
+                    {
+                        //if(!attr.DiscreteValues.Contains(value))
+                        //    string ErrorText;
+                        prop.SetValue(view, value, null);
+                    }
+                    break;
             }
         }
         CheckedListBox CreateCheckListBox(string subgroup, string group)

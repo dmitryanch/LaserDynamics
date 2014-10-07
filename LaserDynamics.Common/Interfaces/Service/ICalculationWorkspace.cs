@@ -14,6 +14,10 @@ namespace LaserDynamics.Common{
         event EventHandler OnCalculationFinish;
         event EventHandler OnCalculationStart;
         event EventHandler OnCalculationError;
+        event EventHandler OnCalculationReport;
         void OnCalculationStopped();
+        bool Stopped {get;set;}
+        int Report { get; set; }
+        string Error { get; set; }
     }
 }
