@@ -84,3 +84,7 @@ C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debu
 C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\obj\Debug\LaserDynamics.Clients.WinForms.csproj.GenerateResource.Cache
 C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.dll
 C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Calculations.FMBSsfmLaserModel.pdb
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\Newtonsoft.Json.dll
+C:\Projects\GitHub\LaserDynamics\Clients\LaserDynamics.Clients.WinForms\bin\Debug\Newtonsoft.Json.xml

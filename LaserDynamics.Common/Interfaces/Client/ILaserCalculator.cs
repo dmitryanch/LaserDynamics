@@ -10,6 +10,7 @@ namespace LaserDynamics.Common
 {
     public interface ILaserCalculator
     {
+        ILaserModelAccessor Accessor { get; set; }
         IList<ICalculation> OpenCalculations { get; set; }
         IList<ICalculation> CalculationTypes { get; set; }
         ICalculation DefaultCalculation { get; set; }
@@ -18,7 +19,7 @@ namespace LaserDynamics.Common
         void LoadCalculations();
         void SaveCalculations();
 
-        void CreateDefaultCalculation(string calcName);
+        void AddDefaultCalculation(string calcName);
         void DeleteCalculation(string calcName);
 
         Task StartCalculation(string calcName);

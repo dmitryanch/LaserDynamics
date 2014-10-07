@@ -10,3 +10,4 @@ C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\obj\Debug\LaserDynamics.Co
 C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\obj\Debug\LaserDynamics.Common.pdb
 C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\bin\Debug\LaserDynamics.Common.dll
 C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\bin\Debug\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\obj\Debug\LaserDynamics.Common.csprojResolveAssemblyReference.cache

@@ -10,6 +10,8 @@ using System.Xml.Serialization;
 using LaserDynamics.Common;
 using LaserDynamics.Calculations.FullMaxvellBlockSsfm;
 using System.ComponentModel;
+using LaserDynamics.Accessor;
+using Newtonsoft.Json;
 
 namespace LaserDynamics.Clients.WinForms
 {
@@ -18,10 +20,12 @@ namespace LaserDynamics.Clients.WinForms
         readonly string AllTypeListFile = "AllTypeList.xml";
         readonly string OpenTypeListFile = "OpenTypeList.xml";
 
+        public ILaserModelAccessor Accessor { get; set; }
         public event EventHandler OnCalculationStopped;
 
         public Presenter()
         {
+            Accessor = new AssemblyAccessor();
             LoadCalculations();
         }
 
@@ -65,122 +69,95 @@ namespace LaserDynamics.Clients.WinForms
         public IList<ICalculation> CalculationTypes { get; set; }
         public ICalculation DefaultCalculation { get; set; }
         public ICalculation CurrentCalculation { get; set; }
-        IList<KeyValuePair<string, Type>> Types { get; set; }
         IList<KeyValuePair<string, Type>> OpenTypes { get; set; }
 
         public void LoadCalculations()
         {
-            Types = new List<KeyValuePair<string, Type>>();
-            if (File.Exists(AllTypeListFile))
-            {
-                using (StreamReader file = new StreamReader(AllTypeListFile))
-                {
-                    XmlSerializer reader = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
-                    Types = (IList<KeyValuePair<string, Type>>)reader.Deserialize(file);
-                }
-            }
+            CalculationTypes = Accessor.Load();
+            
             OpenTypes = new List<KeyValuePair<string, Type>>();
+            var openCalculations = new List<ICalculation>();
             if (File.Exists(OpenTypeListFile))
             {
                 using (StreamReader file = new StreamReader(OpenTypeListFile))
                 {
-                    XmlSerializer reader = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
-                    OpenTypes = (IList<KeyValuePair<string, Type>>)reader.Deserialize(file);
-                }
-            }
-            CalculationTypes = new List<ICalculation>();
-            foreach (var calcTypeFile in Types)
-            {
-                if (File.Exists(calcTypeFile.Key))
-                {
-                    using (StreamReader file = new StreamReader(calcTypeFile.Key))
+                    var str = file.ReadToEnd();
+                    if(!TryDeserialize(str, out openCalculations))
                     {
-                        XmlSerializer reader = new XmlSerializer(calcTypeFile.Value);
-                        CalculationTypes.Add((ICalculation)reader.Deserialize(file));
+                        
                     }
-                }
-            }
-            OpenCalculations = new List<ICalculation>();
-            foreach (var openTypeFile in OpenTypes)
-            {
-                if (File.Exists(openTypeFile.Key))
-                {
-                    using (StreamReader file = new StreamReader(openTypeFile.Key))
-                    {
-                        XmlSerializer reader = new XmlSerializer(openTypeFile.Value);
-                        OpenCalculations.Add((ICalculation)reader.Deserialize(file));
-                    }
+                    OpenCalculations = openCalculations;
+                    //XmlSerializer reader = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
+                    //OpenTypes = (IList<KeyValuePair<string, Type>>)reader.Deserialize(file);
                 }
             }
 
-            //if (CalculationTypes == null)
-            //    CalculationTypes = new List<ICalculation>();
-            CalculationTypes.Add(new Ssfm1dCalculation());
+            //foreach (var openTypeFile in OpenTypes)
+            //{
+            //    if (File.Exists(openTypeFile.Key))
+            //    {
+            //        using (StreamReader file = new StreamReader(openTypeFile.Key))
+            //        {
+            //            XmlSerializer reader = new XmlSerializer(openTypeFile.Value);
+            //            OpenCalculations.Add((ICalculation)reader.Deserialize(file));
+            //        }
+            //    }
+            //}
+
             if (DefaultCalculation == null)
                 DefaultCalculation = CalculationTypes[0];
-            if (OpenCalculations == null)// || OpenCalculations.Count() == 0)
+            if (OpenCalculations == null || !OpenCalculations.Any())
             {
                 OpenCalculations = new List<ICalculation>();
-                OpenCalculations.Add(DefaultCalculation.GenerateNewCalculation());
+                OpenCalculations.Add(DefaultCalculation.CloneCalculation());
             }
         }
         public void SaveCalculations()
         {
-            if (File.Exists(AllTypeListFile))
+            //if (File.Exists(OpenTypeListFile))
+            //{
+            string str = null;
+                
+            foreach (var calc in OpenCalculations)
             {
-                using (StreamWriter file = new StreamWriter(AllTypeListFile))
+                string str1 = null;
+                if (!TrySerialize(calc, out str1))
                 {
-                    XmlSerializer writer = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
-                    writer.Serialize(file, Types);
+                    continue;
                 }
-            }
-            if (File.Exists(OpenTypeListFile))
-            {
-                using (StreamWriter file = new StreamWriter(AllTypeListFile))
-                {
-                    XmlSerializer writer = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
-                    writer.Serialize(file, OpenTypes);
-                }
-            }
-            foreach (var calcType in CalculationTypes)
-            {
-                var fileName = Path.Combine("CalculationTypes", calcType.View.Title + ".xml");
-                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-                if (!File.Exists(fileName))
-                {
-                    using (StreamWriter file = new StreamWriter(fileName))
-                    {
-                        XmlSerializer reader = new XmlSerializer(calcType.GetType());
-                        reader.Serialize(file, calcType);
-                    }
-                }
-            }
-            //OpenCalculations = new List<ICalculation>();
-            foreach (var openCalc in OpenCalculations)
-            {
-                var fileName = Path.Combine("OpenCalculations", openCalc.Name + ".xml");
-                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-                using (StreamWriter file = new StreamWriter(fileName))
-                {
-                    XmlSerializer reader = new XmlSerializer(openCalc.GetType());
-                    reader.Serialize(file, openCalc);
-                }
             }
+                using (StreamWriter file = new StreamWriter(OpenTypeListFile))
+                {
+                    file.Write(str);
+                    //XmlSerializer writer = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
+                    //writer.Serialize(file, OpenTypes);
+                }
+            //}
+            //foreach (var openCalc in OpenCalculations)
+            //{
+            //    var fileName = Path.Combine("OpenCalculations", openCalc.Name + ".xml");
+            //    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
+            //    using (StreamWriter file = new StreamWriter(fileName))
+            //    {
+            //        XmlSerializer reader = new XmlSerializer(openCalc.GetType());
+            //        reader.Serialize(file, openCalc);
+            //    }
+            //}
         }
-        void AddCalculationType(ICalculation calc)
+        //void AddCalculationType(ICalculation calc)
+        //{
+        //    CalculationTypes.Add(calc);
+        //}
+        //void AddOpenCalculation(ICalculation calc)
+        //{
+        //    OpenCalculations.Add(calc);
+        //    //Types.Add(new KeyValuePair<string, Type>(Path.Combine("OpenCalculations", calc.Name + ".xml"), calc.GetType()));
+        //}
+        public void AddDefaultCalculation(string calcName)
         {
-            CalculationTypes.Add(calc);
-            Types.Add(new KeyValuePair<string, Type>(Path.Combine("CalculationTypes", calc.View.Title + ".xml"), calc.GetType()));
-        }
-        void AddOpenCalculation(ICalculation calc)
-        {
-            OpenCalculations.Add(calc);
-            Types.Add(new KeyValuePair<string, Type>(Path.Combine("OpenCalculations", calc.Name + ".xml"), calc.GetType()));
-        }
-        public void CreateDefaultCalculation(string calcName)
-        {
-            var newCalc = DefaultCalculation.GenerateNewCalculation();
+            var newCalc = DefaultCalculation.CloneCalculation();
             newCalc.Name = calcName;
             OpenCalculations.Add(newCalc);
         }
@@ -194,10 +171,37 @@ namespace LaserDynamics.Clients.WinForms
         public void ReplaceCalculation(ICalculation one, ICalculation byAnother)
         {
             OpenCalculations.Remove(one);
-            var newCalc = byAnother.GenerateNewCalculation();
+            var newCalc = byAnother.CloneCalculation();
             newCalc.Name = one.Name;
             CurrentCalculation = newCalc;
             OpenCalculations.Add(newCalc);
+        }
+
+        public static bool TryDeserialize<T>(string json, out T value)
+        {
+            try
+            {
+                value = JsonConvert.DeserializeObject<T>(json);
+                return true;
+            }
+            catch (Exception e)
+            {
+                value = default(T);
+                return false;
+            }
+        }
+        public static bool TrySerialize<T>(T obj, out string str)
+        {
+            try
+            {
+                str = JsonConvert.SerializeObject(obj);
+                return true;
+            }
+            catch (Exception e)
+            {
+                str = "";
+                return false;
+            }
         }
     }
 }

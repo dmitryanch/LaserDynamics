@@ -134,7 +134,7 @@ namespace LaserDynamics.Clients.WinForms
             Loadable = false;
             var calcView = _presenter.DefaultCalculation.View;
             string name = "Calculation " + CalculationsTabControl.TabPages.Count;
-            _presenter.CreateDefaultCalculation(name);
+            _presenter.AddDefaultCalculation(name);
             var newP = CreateNewTabPage(calcView, name);
             CalculationsTabControl.TabPages.Add(newP);
             CalculationsTabControl.SelectedTab = newP;

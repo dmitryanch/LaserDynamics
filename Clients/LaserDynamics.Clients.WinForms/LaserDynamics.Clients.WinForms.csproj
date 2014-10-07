@@ -38,6 +38,9 @@
     <Reference Include="Fourier">
       <HintPath>..\..\..\Интеграция с МАТЛАБ\Jenyay\jenyay.mathematics\bin\Release\Fourier.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -72,6 +75,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -93,6 +97,10 @@
     <ProjectReference Include="..\..\Calculations\FMBSSFM\LaserDynamics.Calculations.FMBSsfmLaserModel.csproj">
       <Project>{729bf411-0329-40d6-9311-c7f8b3ae967c}</Project>
       <Name>LaserDynamics.Calculations.FMBSsfmLaserModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Tools\LaserDynamics.Accessors\LaserDynamics.Accessors.csproj">
+      <Project>{6845641d-9de4-4ee6-8dc4-e11063ffdc43}</Project>
+      <Name>LaserDynamics.Accessors</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

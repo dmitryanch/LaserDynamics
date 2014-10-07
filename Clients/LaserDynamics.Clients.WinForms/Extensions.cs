@@ -10,7 +10,7 @@ namespace LaserDynamics.Clients.WinForms
 {
     public static class CalculationExtensions
     {
-        public static T GenerateNewCalculation<T>(this T calc) where T : ICalculation
+        public static T CloneCalculation<T>(this T calc) where T : ICalculation
         {
             var ctor = calc.GetType().GetConstructor(new Type[0]);
             var obj = (T)ctor.Invoke(new object[0]);

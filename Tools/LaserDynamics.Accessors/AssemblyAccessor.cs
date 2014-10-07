@@ -14,7 +14,7 @@ namespace LaserDynamics.Accessor
         public IList<ICalculation> Load()
         {
             var _Result = new List<ICalculation>();
-            foreach (string assemblyFile in Directory.GetFiles("", "*LaserModel.dll"))
+            foreach (string assemblyFile in Directory.GetFiles(Directory.GetCurrentDirectory(), "*LaserModel.dll"))
                 try
                 {
                     Assembly assembly = Assembly.LoadFrom(assemblyFile);
