@@ -1,0 +1,14 @@
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.dll
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.pdb
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.dll
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.pdb
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.dll
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.pdb
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.dll
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Accessors.pdb
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.dll
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\bin\Debug\LaserDynamics.Common.pdb
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.dll
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.pdb

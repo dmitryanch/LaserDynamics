@@ -1,0 +1,8 @@
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Common\bin\Debug\LaserDynamics.Common.dll
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Common\bin\Debug\LaserDynamics.Common.pdb
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Common\obj\Debug\LaserDynamics.Common.dll
+F:\С Sharp\Projects\IterationExample\LaserDynamics.Common\obj\Debug\LaserDynamics.Common.pdb
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Common\bin\Debug\LaserDynamics.Common.dll
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Common\bin\Debug\LaserDynamics.Common.pdb
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Common\obj\Debug\LaserDynamics.Common.dll
+F:\С Sharp\Projects\LaserDynamics\LaserDynamics.Common\obj\Debug\LaserDynamics.Common.pdb
