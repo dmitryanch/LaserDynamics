@@ -26,7 +26,7 @@ namespace LaserDynamics.Clients.WinForms
             ResumeBtn.Click += (s, e) => _presenter.ResumeCalculation(CalculationsTabControl.SelectedTab.Name);
             StopBtn.Click += (s, e) => _presenter.StopCalculation(CalculationsTabControl.SelectedTab.Name);
             ResultsBtn.Click += (s, e) => _presenter.ShowResults(CalculationsTabControl.SelectedTab.Name);
-            ClosePageBtn.Click += (s, e) => _presenter.ClosePage(CalculationsTabControl.SelectedTab.Name);
+            ClosePageBtn.Click += (s, e) => _presenter.RemoveCalculation(CalculationsTabControl.SelectedTab.Name);
             CalculationsTabControl.SelectedIndexChanged += (s,e)=>
                 {
                     if (!Loadable)
@@ -40,7 +40,7 @@ namespace LaserDynamics.Clients.WinForms
 
         protected override void OnClosed(EventArgs e)
         {
-            _presenter.SaveCalculations();
+            _presenter.SaveOpenCalculations();
             base.OnClosed(e);
         }
         
@@ -191,37 +191,37 @@ namespace LaserDynamics.Clients.WinForms
             {
                 _presenter.StopCalculation(name);
             };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.OnCalculationFinish += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).OnCalculationFinish += (s, e) =>
                 {
                     var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name);
-                    if (calc.Workspace.Error != null)
+                    if (calc.ErrorMessage != null)
                     {
-                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"]as Label).SetTextInvoke("Error: " + calc.Workspace.Error);
+                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"]as Label).SetTextInvoke("Error: " + calc.ErrorMessage);
                     }
-                    else if (calc.Workspace.Stopped)
+                    else if (calc.Status == CalculationStatus.Stopped)
                     {
                         (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Stopped.");
                     }
                     else
                     {
-                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Succesefully performed: " + string.Join(", ", calc.Workspace.GetStats().Select(st => st.ToString() + " ms")));
+                        (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Succesefully performed: " + string.Join(", ", calc.GetStats().Select(st => st.ToString() + " ms")));
                         // реализовать отображение результатов
                     }
                     ReverseButtonsState(StartBtn, StopBtn);
                 };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.OnCalculationError += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).OnCalculationError += (s, e) =>
             {
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name);
-                if (calc.Workspace.Error != null)
+                if (calc.ErrorMessage != null)
                 {
-                    (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Error: " + calc.Workspace.Error);
+                    (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Error: " + calc.ErrorMessage);
                 }
                 ReverseButtonsState(StartBtn, StopBtn);
             };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).Workspace.OnCalculationReport += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name).OnCalculationReport += (s, e) =>
             {
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == name);
-                (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Running: " + calc.Workspace.Report + "%");
+                (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Running: " + calc.Status + "%");
             };
             
             //var ResumeBtn = CreateButton("Resume");
@@ -231,7 +231,7 @@ namespace LaserDynamics.Clients.WinForms
             var CloseBtn = CreateButton("");
             CloseBtn.Click += (s, e) =>
                 {
-                    _presenter.ClosePage(name);
+                    _presenter.RemoveCalculation(name);
                     int index = CalculationsTabControl.TabPages.IndexOf( CalculationsTabControl.SelectedTab);
                     CalculationsTabControl.TabPages.Remove(CalculationsTabControl.SelectedTab);
                     CalculationsTabControl.SelectTab(index - 1);

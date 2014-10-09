@@ -16,8 +16,8 @@ namespace LaserDynamics.Common
         ICalculation DefaultCalculation { get; set; }
         ICalculation CurrentCalculation { get; set; }
         
-        void LoadCalculations();
-        void SaveCalculations();
+        ICalculation LoadCalculations(string path);
+        void SaveCalculation(ICalculation calculation, string path);
 
         void AddDefaultCalculation(string calcName);
         void DeleteCalculation(string calcName);

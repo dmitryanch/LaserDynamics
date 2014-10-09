@@ -13,7 +13,5 @@ namespace LaserDynamics.Common{
         string NumMethod { get; }
         string[] InitialConditions { get; }
         string[] BoundaryConditions { get; }
-
-        ICalculation Parent { get; set; }
     }
 }

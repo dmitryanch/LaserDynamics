@@ -36,13 +36,13 @@ namespace LaserDynamics.Clients.WinForms
             var calc = CurrentCalculation;
             if (calc == null)
                 throw new NullReferenceException("Не найдено вычисление с именем '" + calcName + "'.");
-            await Task.Factory.StartNew(() => calc.Workspace.Calculate());
+            await Task.Factory.StartNew(() => calc.Calculate());
         }
         void CalculateIt()
         {
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
             timer.Start();
-            CurrentCalculation.Workspace.Calculate();
+            CurrentCalculation.Calculate();
             timer.Stop();
             MessageBox.Show("Success! " + timer.ElapsedMilliseconds);
         }
@@ -52,17 +52,17 @@ namespace LaserDynamics.Clients.WinForms
         }
         public void StopCalculation(string calcName)
         {
-            CurrentCalculation.Workspace.OnCalculationStopped();
+            CurrentCalculation.OnCalculationStopped();
         }
         public void ShowResults(string calcName)
         {
 
         }
-        public void ClosePage(string calcName)
+        public void RemoveCalculation(string calcName)
         {
             var calc = OpenCalculations.FirstOrDefault(c => c.Name == calcName);
             OpenCalculations.Remove(calc);
-            CurrentCalculation.Workspace.OnCalculationStopped();
+            CurrentCalculation.OnCalculationStopped();
         }
 
         public IList<ICalculation> OpenCalculations { get; set; }
@@ -71,6 +71,7 @@ namespace LaserDynamics.Clients.WinForms
         public ICalculation CurrentCalculation { get; set; }
         IList<KeyValuePair<string, Type>> OpenTypes { get; set; }
 
+        #region Loading & Saving Logics
         public void LoadCalculations()
         {
             CalculationTypes = Accessor.Load();
@@ -87,22 +88,8 @@ namespace LaserDynamics.Clients.WinForms
                         
                     }
                     OpenCalculations = openCalculations;
-                    //XmlSerializer reader = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
-                    //OpenTypes = (IList<KeyValuePair<string, Type>>)reader.Deserialize(file);
                 }
             }
-
-            //foreach (var openTypeFile in OpenTypes)
-            //{
-            //    if (File.Exists(openTypeFile.Key))
-            //    {
-            //        using (StreamReader file = new StreamReader(openTypeFile.Key))
-            //        {
-            //            XmlSerializer reader = new XmlSerializer(openTypeFile.Value);
-            //            OpenCalculations.Add((ICalculation)reader.Deserialize(file));
-            //        }
-            //    }
-            //}
 
             if (DefaultCalculation == null)
                 DefaultCalculation = CalculationTypes[0];
@@ -112,7 +99,11 @@ namespace LaserDynamics.Clients.WinForms
                 OpenCalculations.Add(DefaultCalculation.CloneCalculation());
             }
         }
-        public void SaveCalculations()
+        public void SaveCalculation(ICalculation calculation, string path)
+        {
+
+        }
+        public void SaveOpenCalculations()
         {
             //if (File.Exists(OpenTypeListFile))
             //{
@@ -123,38 +114,18 @@ namespace LaserDynamics.Clients.WinForms
                 string str1 = null;
                 if (!TrySerialize(calc, out str1))
                 {
-                    continue;
+                    //continue;
                 }
 
             }
                 using (StreamWriter file = new StreamWriter(OpenTypeListFile))
                 {
                     file.Write(str);
-                    //XmlSerializer writer = new XmlSerializer(typeof(List<KeyValuePair<string, Type>>));
-                    //writer.Serialize(file, OpenTypes);
                 }
-            //}
-            //foreach (var openCalc in OpenCalculations)
-            //{
-            //    var fileName = Path.Combine("OpenCalculations", openCalc.Name + ".xml");
-            //    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-
-            //    using (StreamWriter file = new StreamWriter(fileName))
-            //    {
-            //        XmlSerializer reader = new XmlSerializer(openCalc.GetType());
-            //        reader.Serialize(file, openCalc);
-            //    }
-            //}
         }
-        //void AddCalculationType(ICalculation calc)
-        //{
-        //    CalculationTypes.Add(calc);
-        //}
-        //void AddOpenCalculation(ICalculation calc)
-        //{
-        //    OpenCalculations.Add(calc);
-        //    //Types.Add(new KeyValuePair<string, Type>(Path.Combine("OpenCalculations", calc.Name + ".xml"), calc.GetType()));
-        //}
+
+        #endregion
+
         public void AddDefaultCalculation(string calcName)
         {
             var newCalc = DefaultCalculation.CloneCalculation();

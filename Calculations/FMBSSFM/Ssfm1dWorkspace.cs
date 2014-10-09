@@ -64,19 +64,19 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         const double eps = 1e-10;
         int jj = 0;
 
-        Stopwatch sumtimer = new Stopwatch();
-        Stopwatch ffttimer = new Stopwatch();
-        Stopwatch normtimer = new Stopwatch();
+        public Stopwatch ffttimer = new Stopwatch();
+        public Stopwatch normtimer = new Stopwatch();
+
         #endregion
         #region Private Methods
-        void Set(Complex[] from, Complex[] to)
+        public void Set(Complex[] from, Complex[] to)
         {
             for (int i = 0; i < from.Length; i++)
             {
                 to[i] = from[i];
             }
         }
-        void Set(double[] from, double[] to)
+        public void Set(double[] from, double[] to)
         {
             for (int i = 0; i < from.Length; i++)
             {
@@ -84,7 +84,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             }
         }
 
-        void SetSpaceFrequency()
+        public void SetSpaceFrequency()
         {
             K = new double[Nx];
             for (int i = 0; i < Nx; i++)
@@ -95,7 +95,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             Fourier.fftShift(K);
         }
 
-        void SetPumping(double X)
+        public void SetPumping(double X)
         {
             R = new double[Nx];
             for (int i = 0; i < Nx; i++)
@@ -103,7 +103,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 R[i] = X;
             }
         }
-        void SetLosses(double X)
+        public void SetLosses(double X)
         {
             Sigma = new double[Nx];
             for (int i = 0; i < Nx; i++)
@@ -111,7 +111,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 Sigma[i] = X;
             }
         }
-        void SetInitials()
+        public void SetInitials()
         {
             for (int i = 0; i < Nx; i++)
             {
@@ -121,7 +121,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             }
             E[0] = E[0] + 1e-10;
         }
-        void SetExtraConstants()
+        public void SetExtraConstants()
         {
             exp1 = Math.Exp(-gamma * dt / 2);
             exp2 = Complex.Exp(new Complex(-dt / 2, -delta * dt / 2));
@@ -131,7 +131,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 exp4[i] = Sigma[i] / new Complex(Sigma[i] - 1.0, a * K[i] - delta);
             }
         }
-        double NormsComparison(Complex[] A1, Complex[] A2)
+        public double NormsComparison(Complex[] A1, Complex[] A2)
         {
             var dA = new double[Nx];
             var A = new double[Nx];
@@ -143,7 +143,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             double res = dA.Max() / A.Max();
             return res;
         }
-        double NormsComparison(double[] A1, double[] A2)
+        public double NormsComparison(double[] A1, double[] A2)
         {
             var dA = new double[Nx];
             var A = new double[Nx];
@@ -156,31 +156,10 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             return res;
         }
         #endregion
-        #region Public Events
-        public event EventHandler OnCalculationFinish;
-        public event EventHandler OnCalculationStart;
-        public event EventHandler OnCalculationError;
-        public event EventHandler OnCalculationReport;
-        #endregion
+
         #region Public Methods
-        void SetParameters()
+        public void SetParameters()
         {
-            var view =  (Parent.View as Ssfm1dView);
-
-            Nx = view.NumNodes;
-            L = view.ApertureSize;
-            dt = view.TimeStep;
-            Nt = view.TotalTime;
-
-            ElRelax = view.ElectricRelax;
-            PolRelax = view.PolarizationRelax;
-            InvRelax = view.InversionRelax;
-            gamma = view.InversionRelax / view.PolarizationRelax;
-            sigma = view.ElectricRelax / view.PolarizationRelax;
-            delta = view.Detuning;
-            r = view.Pumping;
-            a = view.Diffraction;
-
             exp3 = new Complex[Nx];
             exp4 = new Complex[Nx];
 
@@ -212,147 +191,92 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             SetInitials();
             SetExtraConstants();
         }
-        public void Calculate()
+        public void DoIteration()
         {
-            try
+            ffttimer.Start();
+            Ef = Fourier.FFT(E);
+            Pf = Fourier.FFT(P);
+            ffttimer.Stop();
+
+            for (int i = 0; i < Nx; i++)
             {
-                Error = null;
-                Stopped = false;
-                Report = 0;
-                sumtimer.Reset();
-                ffttimer.Reset();
-                normtimer.Reset();
-                if (OnCalculationStart != null)
-                    OnCalculationStart(this, new EventArgs());
-                sumtimer.Start();
-                SetParameters();
-                for (int q = 0; q < Nt; q++)
-                {
-                    if (Stopped)
-                        break;
-                    ffttimer.Start();
-                    Ef = Fourier.FFT(E);
-                    Pf = Fourier.FFT(P);
-                    ffttimer.Stop();
-
-                    for (int i = 0; i < Nx; i++)
-                    {
-                        Dfl[i] = exp1 * D[i];
-                        Pfl[i] = exp2 * P[i];
-                        Pf[i] = Pf[i] * exp4[i];
-                        Efl[i] = exp2 * Pf[i] + exp3[i] * (Ef[i] - Pf[i]);
-                    }
-                    ffttimer.Start();
-                    Efl = Fourier.IFFT(Efl);
-                    ffttimer.Stop();
-
-                    // Start iteration process
-                    Set(E, Ec);
-                    Set(P, Pc);
-                    Set(D, Dc);
-                    Set(E, Ej);
-                    ffttimer.Start();
-                    Ef = Fourier.FFT(Efl);
-                    ffttimer.Stop();
-
-                    for (int i = 0; i < Nx; i++)
-                    {
-                        exp5[i] = D[i] * E[i];
-                        exp6[i] = 2 * R[i] - 0.5 * (Ec[i].Re * Pc[i].Re + Pc[i].Im * Ec[i].Im);
-                    }
-                    //jj = 0;
-                    for (int j = 0; j < Nmax; j++)
-                    {
-                        //jj++;
-                        for (int i = 0; i < Nx; i++)
-                        {
-                            Pj[i] = Pfl[i] + (exp5[i] + Dc[i] * Ec[i]) / 2 * dt;
-                            Dj[i] = Dfl[i] + gamma * dt * (exp6[i] - 0.5 * (Ec[i].Re * Pc[i].Re + Pc[i].Im * Ec[i].Im)) / 2;
-                        }
-                        ffttimer.Start();
-                        Pf = Fourier.FFT(Pj);
-                        ffttimer.Stop();
-
-                        for (int i = 0; i < Nx; i++)
-                        {
-                            Pf[i] = Pf[i] * exp4[i];
-                            Dj[i] = Dj[i] * exp1;
-                            Pj[i] = Pj[i] * exp2;
-                            Ej[i] = exp2 * Pf[i] + exp3[i] * (Ef[i] - Pf[i]);
-                        }
-                        ffttimer.Start();
-                        Ej = Fourier.IFFT(Ej);
-                        ffttimer.Stop();
-
-                        normtimer.Start();
-                        //double normE = NormsComparison(Ej, Ec);
-                        //double normP = NormsComparison(Pj, Pc);
-                        //double normD = NormsComparison(Dj, Dc);
-                        if (NormsComparison(Ej, Ec) < eps && NormsComparison(Pj, Pc) < eps && NormsComparison(Dj, Dc) < eps)
-                        {
-                            Ec = Ej;
-                            Pc = Pj;
-                            Dc = Dj;
-                            normtimer.Stop();
-                            if (jj != j)
-                            {
-                                Console.WriteLine(j);
-                                jj = j;
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            Set(Ej, Ec);
-                            Set(Pj, Pc);
-                            Set(Dj, Dc);
-                        }
-                        normtimer.Stop();
-                    }
-                    //Console.WriteLine(jj);
-                    E = Ec;
-                    P = Pc;
-                    D = Dc;
-
-                    var newReport = (int)Math.Floor((double)q/Nt*100);
-                    if (newReport != Report)    //  && newReport%5 == 0
-                    {
-                        if (OnCalculationReport != null)
-                        {
-                            OnCalculationReport(this, new EventArgs());
-                        }
-                        Report = newReport;
-                    }
-                }
-                sumtimer.Stop();
-                if (OnCalculationFinish != null)
-                {
-                    OnCalculationFinish(this, new EventArgs());
-                }
+                Dfl[i] = exp1 * D[i];
+                Pfl[i] = exp2 * P[i];
+                Pf[i] = Pf[i] * exp4[i];
+                Efl[i] = exp2 * Pf[i] + exp3[i] * (Ef[i] - Pf[i]);
             }
-            catch (Exception ex)
+            ffttimer.Start();
+            Efl = Fourier.IFFT(Efl);
+            ffttimer.Stop();
+
+            // Start iteration process
+            Set(E, Ec);
+            Set(P, Pc);
+            Set(D, Dc);
+            Set(E, Ej);
+            ffttimer.Start();
+            Ef = Fourier.FFT(Efl);
+            ffttimer.Stop();
+
+            for (int i = 0; i < Nx; i++)
             {
-                Error = ex.Message;     // Как адекватно выводить здесь сообщение об ошибке?
-                if (OnCalculationError != null)
-                {
-                    OnCalculationError(this, new EventArgs());
-                }
+                exp5[i] = D[i] * E[i];
+                exp6[i] = 2 * R[i] - 0.5 * (Ec[i].Re * Pc[i].Re + Pc[i].Im * Ec[i].Im);
             }
+            //jj = 0;
+            for (int j = 0; j < Nmax; j++)
+            {
+                //jj++;
+                for (int i = 0; i < Nx; i++)
+                {
+                    Pj[i] = Pfl[i] + (exp5[i] + Dc[i] * Ec[i]) / 2 * dt;
+                    Dj[i] = Dfl[i] + gamma * dt * (exp6[i] - 0.5 * (Ec[i].Re * Pc[i].Re + Pc[i].Im * Ec[i].Im)) / 2;
+                }
+                ffttimer.Start();
+                Pf = Fourier.FFT(Pj);
+                ffttimer.Stop();
+
+                for (int i = 0; i < Nx; i++)
+                {
+                    Pf[i] = Pf[i] * exp4[i];
+                    Dj[i] = Dj[i] * exp1;
+                    Pj[i] = Pj[i] * exp2;
+                    Ej[i] = exp2 * Pf[i] + exp3[i] * (Ef[i] - Pf[i]);
+                }
+                ffttimer.Start();
+                Ej = Fourier.IFFT(Ej);
+                ffttimer.Stop();
+
+                normtimer.Start();
+                //double normE = NormsComparison(Ej, Ec);
+                //double normP = NormsComparison(Pj, Pc);
+                //double normD = NormsComparison(Dj, Dc);
+                if (NormsComparison(Ej, Ec) < eps && NormsComparison(Pj, Pc) < eps && NormsComparison(Dj, Dc) < eps)
+                {
+                    Ec = Ej;
+                    Pc = Pj;
+                    Dc = Dj;
+                    normtimer.Stop();
+                    if (jj != j)
+                    {
+                        Console.WriteLine(j);
+                        jj = j;
+                    }
+                    break;
+                }
+                else
+                {
+                    Set(Ej, Ec);
+                    Set(Pj, Pc);
+                    Set(Dj, Dc);
+                }
+                normtimer.Stop();
+            }
+            //Console.WriteLine(jj);
+            E = Ec;
+            P = Pc;
+            D = Dc;
         }
-        public long[] GetStats()
-        {
-            return new long[3] { sumtimer.ElapsedMilliseconds, ffttimer.ElapsedMilliseconds, normtimer.ElapsedMilliseconds };
-        }
-        public void GetResults()
-        {        }
         #endregion
-        public bool Stopped {get;set;}
-        public string Error { get; set; }
-        public int Report { get; set; }
-        public void OnCalculationStopped()
-        {
-            Stopped = true;
-        }
-        public ICalculation Parent { get; set; }
     }
 }

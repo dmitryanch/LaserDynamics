@@ -21,7 +21,6 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         string _boundaryCondition;
 
         public string Title { get { return _title; } }
-        public ICalculation Parent { get; set; }
         // Common
         public string ModelTitle { get { return _modelTitle; } }
         public string CalculationType { get { return _calculationType; } }
