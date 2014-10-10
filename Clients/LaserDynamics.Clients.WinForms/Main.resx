@@ -120,6 +120,28 @@
   <metadata name="mainMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="startToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABwAAAAUCAYAAACeXl35AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        xAAADsQBlSsOGwAAAMFJREFUSEu9zV0KgzAYRNFZencYFBFRXIGKPxuYmoKQhrGMUnw4T5kvF9u28UnP
+        B9d1pQMvfKi3K7AsCx1HMFLvLszzTEcajNTGcTt4N4ppmuhQwUhtf8E4jnSo2EHtz2AYBjpUKKVuFPR9
+        T4eK5NRd7q/BSN2m0HUdHerzL4C8y6FtWzpk5LDH1I2CpmnokKFoj6n9GdR1TcdZTG1/uR+8EYtQVRUd
+        eUxtHCjLko40pt5dKIqCjhiK1NsVCCHwOYFvJyIhnZmA+pQAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="stopToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABwAAAAUCAYAAACeXl35AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        wgAADsIBFShKgAAAAKZJREFUSEu9zUsKhFAMRNEsvXf4UEREcQUqfjZQ3ZmGS9pRBmdYde15HlWqD973
+        rUp2XZcq2XmeysjsFdqS+uBxHMrQOfn80D6yfd+VoXPiQdpHtm2bMnROPEj7yNZ1VYbOiQdpH9UHl2VR
+        hs6JB2kf2TzPytA58SDtI5umSRk6Jx6kfWTjOCpD58SDtI/qg8Mw6B8/e4O2kfV9r0rWdZ0qWWtNdZq+
+        B+8Hz3PHTzAAAAAASUVORK5CYII=
+</value>
+  </data>
+  <metadata name="ErrorToolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>127, 17</value>
+  </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>41</value>
   </metadata>

@@ -23,7 +23,7 @@ namespace LaserDynamics.Common
             {
                 if (Type == DataType.Double || Type == DataType.Integer)
                 {
-                    return String.Format("Field has to be '{0}'-number from interval [{1} .. {2}]", Type.ToString(), MoreThan, LessThan);
+                    return String.Format("Field <{0}> has to be number of '{1}'-type from interval [{2} .. {3}]", Title, Type.ToString(), MoreThan, LessThan);
                 }
                 return null;
             }

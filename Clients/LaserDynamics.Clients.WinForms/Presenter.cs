@@ -12,21 +12,21 @@ using LaserDynamics.Calculations.FullMaxvellBlockSsfm;
 using System.ComponentModel;
 using LaserDynamics.Accessor;
 using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace LaserDynamics.Clients.WinForms
 {
     public class Presenter : ILaserCalculator
     {
-        readonly string AllTypeListFile = "AllTypeList.xml";
-        readonly string OpenTypeListFile = "OpenTypeList.xml";
-
         public ILaserModelAccessor Accessor { get; set; }
         public event EventHandler OnCalculationStopped;
 
         public Presenter()
         {
             Accessor = new AssemblyAccessor();
-            LoadCalculations();
+            ReloadCalculationTypes();
+            DefaultCalculation = CalculationTypes.First();
+            OpenCalculations = new List<ICalculation>();
         }
 
         public async Task StartCalculation(string calcName)
@@ -61,69 +61,57 @@ namespace LaserDynamics.Clients.WinForms
         public void RemoveCalculation(string calcName)
         {
             var calc = OpenCalculations.FirstOrDefault(c => c.Name == calcName);
+            if (calc == null)
+                throw new NullReferenceException("Не найдено вычисление с именем '" + calcName + "'.");
+            if (calc.Status == CalculationStatus.Running)
+                calc.OnCalculationStopped();
             OpenCalculations.Remove(calc);
-            CurrentCalculation.OnCalculationStopped();
         }
 
         public IList<ICalculation> OpenCalculations { get; set; }
         public IList<ICalculation> CalculationTypes { get; set; }
         public ICalculation DefaultCalculation { get; set; }
         public ICalculation CurrentCalculation { get; set; }
-        IList<KeyValuePair<string, Type>> OpenTypes { get; set; }
-
+        
         #region Loading & Saving Logics
-        public void LoadCalculations()
+        public void ReloadCalculationTypes()
         {
             CalculationTypes = Accessor.Load();
-            
-            OpenTypes = new List<KeyValuePair<string, Type>>();
-            var openCalculations = new List<ICalculation>();
-            if (File.Exists(OpenTypeListFile))
+        }
+        public ICalculation OpenCalculation(string path)
+        {
+            if (File.Exists(path))
             {
-                using (StreamReader file = new StreamReader(OpenTypeListFile))
+                using (StreamReader file = new StreamReader(path))
                 {
-                    var str = file.ReadToEnd();
-                    if(!TryDeserialize(str, out openCalculations))
+                    var body = file.ReadToEnd();
+                    int start = body.IndexOf("Title") + 8;
+                    int end = body.IndexOf("ModelTitle");
+                    string title = body.Substring(start , end-start).Trim(new char[] {'\"',','});
+                    var calc = CalculationTypes.FirstOrDefault(c => c.View.Title == title).CloneCalculation();
+                    if (!TryDeserialize(body, ref calc))
                     {
-                        
+                        return null;
                     }
-                    OpenCalculations = openCalculations;
+
+                    
+                    return calc;
                 }
             }
-
-            if (DefaultCalculation == null)
-                DefaultCalculation = CalculationTypes[0];
-            if (OpenCalculations == null || !OpenCalculations.Any())
-            {
-                OpenCalculations = new List<ICalculation>();
-                OpenCalculations.Add(DefaultCalculation.CloneCalculation());
-            }
+            return null;
         }
         public void SaveCalculation(ICalculation calculation, string path)
         {
-
-        }
-        public void SaveOpenCalculations()
-        {
-            //if (File.Exists(OpenTypeListFile))
-            //{
-            string str = null;
-                
-            foreach (var calc in OpenCalculations)
+            string stringBody = null;
+            if (!TrySerialize(calculation, out stringBody))
             {
-                string str1 = null;
-                if (!TrySerialize(calc, out str1))
-                {
-                    //continue;
-                }
-
+                return;
             }
-                using (StreamWriter file = new StreamWriter(OpenTypeListFile))
-                {
-                    file.Write(str);
-                }
+            using (StreamWriter file = new StreamWriter(path))
+            {
+                file.Write(stringBody);
+            }
         }
-
         #endregion
 
         public void AddDefaultCalculation(string calcName)
@@ -131,13 +119,12 @@ namespace LaserDynamics.Clients.WinForms
             var newCalc = DefaultCalculation.CloneCalculation();
             newCalc.Name = calcName;
             OpenCalculations.Add(newCalc);
+            CurrentCalculation = newCalc;
         }
-        public void DeleteCalculation(string calcName)
+        public void AddCalculation(ICalculation calc)
         {
-            var calc = OpenCalculations.FirstOrDefault(c => c.Name == calcName);
-            if (calc == null)
-                throw new NullReferenceException("Не найдено вычисление с именем '" + calcName + "'.");
-            OpenCalculations.Remove(calc);
+            OpenCalculations.Add(calc);
+            CurrentCalculation = calc;
         }
         public void ReplaceCalculation(ICalculation one, ICalculation byAnother)
         {
@@ -148,11 +135,11 @@ namespace LaserDynamics.Clients.WinForms
             OpenCalculations.Add(newCalc);
         }
 
-        public static bool TryDeserialize<T>(string json, out T value)
+        public static bool TryDeserialize<T>(string json, ref T value)
         {
             try
             {
-                value = JsonConvert.DeserializeObject<T>(json);
+                value = (T)JsonConvert.DeserializeObject(json, value.GetType(), new JsonSerializerSettings { });
                 return true;
             }
             catch (Exception e)

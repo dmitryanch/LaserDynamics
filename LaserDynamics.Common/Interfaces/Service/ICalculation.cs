@@ -19,14 +19,21 @@ namespace LaserDynamics.Common
         event EventHandler OnCalculationStart;
         event EventHandler OnCalculationError;
         event EventHandler OnCalculationReport;
+        event EventHandler OnCalculationValidationFailed;
+            
         void OnCalculationStopped();
         CalculationStatus Status { get; set; }
         string ErrorMessage { get; set; }
         string ReportMessage { get; set; }
+        
+        // system
+        bool IsSaved { get; set; }
+        string Path { get; set; }
     }
     public enum CalculationStatus
     {
         Ready,
+        ValidationFailed,
         Running,
         Stopped,
         Error,

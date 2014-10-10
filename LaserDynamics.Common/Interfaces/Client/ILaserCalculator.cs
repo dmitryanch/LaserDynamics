@@ -16,11 +16,11 @@ namespace LaserDynamics.Common
         ICalculation DefaultCalculation { get; set; }
         ICalculation CurrentCalculation { get; set; }
         
-        ICalculation LoadCalculations(string path);
+        ICalculation OpenCalculation(string path);
         void SaveCalculation(ICalculation calculation, string path);
 
         void AddDefaultCalculation(string calcName);
-        void DeleteCalculation(string calcName);
+        void RemoveCalculation(string calcName);
 
         Task StartCalculation(string calcName);
         void ResumeCalculation(string calcName);

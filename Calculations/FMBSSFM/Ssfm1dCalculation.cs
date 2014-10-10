@@ -26,6 +26,15 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             {
                 var workspace = Workspace as Ssfm1dWorkspace;
 
+                SetParametersFromViewToWorkSpace();
+                if (!workspace.IsValid())
+                {
+                    Status = CalculationStatus.ValidationFailed;
+                    if (OnCalculationValidationFailed != null)
+                        OnCalculationValidationFailed(this, new EventArgs());
+                    return;
+                }
+                workspace.SetParameters(); 
                 Status = CalculationStatus.Running;
                 ErrorMessage = null;
                 ReportMessage = "0";
@@ -35,7 +44,6 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 if (OnCalculationStart != null)
                     OnCalculationStart(this, new EventArgs());
                 sumtimer.Start();
-                SetParametersFromViewToWorkSpace();
                 for (int q = 0; q < workspace.Nt; q++)
                 {
                     if (Status == CalculationStatus.Stopped)
@@ -44,7 +52,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                     workspace.DoIteration();
 
                     var newReport = ((int)Math.Floor((double)q / workspace.Nt * 100)).ToString();
-                    if (newReport != ReportMessage)    //  && newReport%5 == 0
+                    if (newReport != ReportMessage)
                     {
                         if (OnCalculationReport != null)
                         {
@@ -56,12 +64,15 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 sumtimer.Stop();
                 if (OnCalculationFinish != null)
                 {
+                    if(Status == CalculationStatus.Running)
+                        Status = CalculationStatus.Finished;
                     OnCalculationFinish(this, new EventArgs());
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;     // Как адекватно выводить здесь сообщение об ошибке?
+                Status = CalculationStatus.Error;
                 if (OnCalculationError != null)
                 {
                     OnCalculationError(this, new EventArgs());
@@ -86,9 +97,6 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             workspace.delta = view.Detuning;
             workspace.r = view.Pumping;
             workspace.a = view.Diffraction;
-
-            workspace.SetParameters();
-
         }
         public long[] GetStats()
         {
@@ -97,8 +105,8 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         }
         public void GetResults()
         { }
-        string ErrorMessage { get; set; }
-        string ReportMessage { get; set; }
+        public string ErrorMessage { get; set; }
+        public string ReportMessage { get; set; }
         public CalculationStatus Status { get; set; }
         public void OnCalculationStopped()
         {
@@ -109,9 +117,11 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         public event EventHandler OnCalculationStart;
         public event EventHandler OnCalculationError;
         public event EventHandler OnCalculationReport;
+        public event EventHandler OnCalculationValidationFailed;
         #endregion
 
         public Stopwatch sumtimer = new Stopwatch();
-        
+        public bool IsSaved { get; set; }
+        public string Path { get; set; }
     }
 }

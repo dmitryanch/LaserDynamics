@@ -8,6 +8,6 @@ namespace LaserDynamics.Common
 {
     public interface ICalculationWorkspace
     {
-
+        bool IsValid();
     }
 }

@@ -18,6 +18,8 @@ namespace LaserDynamics.Clients.WinForms
             //obj.Workspace.OnCalculationReport += (s, e) =>  { };
             //obj.Workspace.OnCalculationError += (s, e) => { };
             //obj.Workspace.OnCalculationFinish += (s, e) => { };
+            obj.IsSaved = true;
+            obj.Path = null;
             return obj;
         }
     }

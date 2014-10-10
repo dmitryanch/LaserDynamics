@@ -158,6 +158,12 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         #endregion
 
         #region Public Methods
+        public bool IsValid()
+        {
+            if (ElRelax == 0 || PolRelax == 0 || InvRelax == 0 || delta == 0 || r == 0 || a == 0 || Nx == 0 || L == 0 || Nt == 0 || dt == 0)
+                return false;
+            return true;
+        }
         public void SetParameters()
         {
             exp3 = new Complex[Nx];
