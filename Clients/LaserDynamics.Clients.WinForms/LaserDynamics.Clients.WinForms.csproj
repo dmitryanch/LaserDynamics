@@ -38,6 +38,7 @@
     <Reference Include="Fourier">
       <HintPath>..\..\..\Интеграция с МАТЛАБ\Jenyay\jenyay.mathematics\bin\Release\Fourier.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>

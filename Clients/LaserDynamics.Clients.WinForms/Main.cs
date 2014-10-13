@@ -18,29 +18,39 @@ namespace LaserDynamics.Clients.WinForms
     {
         bool IsSelectedIndexChanged = true;
         Presenter _presenter;
-        //IList<KeyValuePair<string, Control[]>> ControlElements = new List<KeyValuePair<string, Control[]>>();
+        IList<KeyValuePair<string, Control[]>> ControlElements = new List<KeyValuePair<string, Control[]>>();
         public Main()
         {
             InitializeComponent();
             _presenter = new Presenter();
-            CreateDefaultCalculationTabPage();
-            CreateMenuItem.Click += (s,e) => CreateDefaultCalculationTabPage();
-            OpenMenuItem.Click += (s, e) => OpenPage();
-            SaveMenuItem.Click += (s, e) => SavePage(_presenter.CurrentCalculation);
-            SaveAsMenuItem.Click += (s, e) => SaveAsPage(_presenter.CurrentCalculation);
-            CloseMenuItem.Click += (s, e) => ClosePage(CalculationsTabControl.SelectedTab.Name);
+            CreateDefault();
+            CreateMenuItem.Click += (s,e) => CreateDefault();
+            OpenMenuItem.Click += (s, e) => Open();
+            SaveMenuItem.Click += (s, e) => Save(_presenter.CurrentCalculation);
+            SaveAsMenuItem.Click += (s, e) => SaveAs(_presenter.CurrentCalculation);
+            CloseMenuItem.Click += (s, e) => Close(CalculationsTabControl.SelectedTab.Name);
             ExitMenuItem.Click += (s, e) => Exit();
-            CalculationsTabControl.SelectedIndexChanged += (s, e) =>
-                {
-                    if (!IsSelectedIndexChanged)
-                        return;
-                    if (CalculationsTabControl.SelectedTab == CalculationsTabControl.TabPages["PlusTabPage"])
-                        CreateDefaultCalculationTabPage();
-                    else _presenter.CurrentCalculation = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == CalculationsTabControl.SelectedTab.Name);
-                };
-            // реализовать функциональность наполнения _presenter.OpenPages и _presenter.Models
+            RenameMenuItem.Click += (s, e) => Rename();
+            CalculationsTabControl.SelectedIndexChanged += (s, e) => OnSelectedPageChanged();
         }
-        void OpenPage()
+        void OnSelectedPageChanged()
+        {
+            if (!IsSelectedIndexChanged)
+                return;
+            if (CalculationsTabControl.SelectedTab == CalculationsTabControl.TabPages["PlusTabPage"])
+                CreateDefault();
+            else _presenter.CurrentCalculation = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == CalculationsTabControl.SelectedTab.Name);
+        }
+        void Rename()
+        {
+            var oldName = _presenter.CurrentCalculation.Name;
+            var newName = Microsoft.VisualBasic.Interaction.InputBox("New name:", "Rename calculation", oldName);
+            if (string.IsNullOrEmpty(newName) || newName == oldName)
+                return;
+            CalculationsTabControl.SelectedTab.Text = newName;
+            _presenter.CurrentCalculation.Name = newName;
+        }
+        void Open()
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = "clc files (*.clc)|*.clc|All files (*.*)|*.*";
@@ -56,48 +66,58 @@ namespace LaserDynamics.Clients.WinForms
                 }
             }
         }
-        void SavePage(ICalculation calc)
+        void Save(ICalculation calc)
         {
             if (calc.Path != null)
             {
-                _presenter.CurrentCalculation.IsSaved = true;
-                CalculationsTabControl.SelectedTab.Text = _presenter.CurrentCalculation.Name;
                 _presenter.SaveCalculation(calc, calc.Path);
+                CalculationSaved(calc);
                 return;
             }
-            SaveAsPage(calc);
+            SaveAs(calc);
         }
-        void SaveAsPage(ICalculation calc)
+        void SaveAs(ICalculation calc)
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = "clc files (*.clc)|*.clc|All files (*.*)|*.*";
             dialog.RestoreDirectory = true;
-
+            dialog.FileName = calc.Name;
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                _presenter.CurrentCalculation.IsSaved = true;
-                CalculationsTabControl.SelectedTab.Text = _presenter.CurrentCalculation.Name; 
                 calc.Path = dialog.FileName;
                 _presenter.SaveCalculation(calc, dialog.FileName);
+                CalculationSaved(calc);
             }
+        }
+        void Close(string id)
+        {
+            var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+            if (!calc.IsSaved)
+                Save(calc);
+            _presenter.RemoveCalculation(id);
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+            ControlElements.Remove(controls);
+            var page = CalculationsTabControl.TabPages[id];
+            int index = CalculationsTabControl.TabPages.IndexOf(page);
+            CalculationsTabControl.TabPages.Remove(page);
+            CalculationsTabControl.SelectTab(index - 1 > -1 ? index - 1 : 0);
         }
         void Exit()
         {
-            var notSavedCalc = _presenter.OpenCalculations.Where(c => !c.IsSaved);
+            var notSavedCalc = _presenter.OpenCalculations.Where(c => !c.IsSaved).ToList();
             if (notSavedCalc == null || !notSavedCalc.Any())
                 this.Close();
             var notSavedCalcsString = String.Join(",\n", notSavedCalc.Select(c => c.Name));
-            if (notSavedCalc != null && MessageBox.Show("Folowing calculations not saved:\n" + notSavedCalcsString + "\nSave changes?", "LaserDynamics", MessageBoxButtons.YesNoCancel) == DialogResult.OK)
+            if (notSavedCalc != null && MessageBox.Show("Folowing calculations not saved:\n" + notSavedCalcsString + "\nSave changes?", "LaserDynamics", MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
             {
-                var saveAsCalcs = notSavedCalc.Where(c => c.Path != null);
-                foreach(var calc in saveAsCalcs)
+                for (int i = 0; i < notSavedCalc.Count; i++ )
                 {
-                    SaveAsPage(calc);
+                    Close(notSavedCalc[i].CalculationId);
                 }
-                foreach (var calc in notSavedCalc.Except(saveAsCalcs))
-                {
-                    _presenter.SaveCalculation(calc, calc.Path);
-                }
+                //foreach(var calc in notSavedCalc)
+                //{
+                //    Close(calc.CalculationId);
+                //}
             }
 
         }
@@ -195,18 +215,16 @@ namespace LaserDynamics.Clients.WinForms
         void CreatePage(ICalculation calc)
         {
             IsSelectedIndexChanged = false;
-            var calcView = calc.View;
-            var newP = CreateNewTabPage(calcView, calc.Name);
+            var newP = CreateNewTabPage(calc);
             PushTabPage(newP);
             IsSelectedIndexChanged = true;
         }
-        void CreateDefaultCalculationTabPage()
+        void CreateDefault()
         {
             IsSelectedIndexChanged = false;
-            var calcView = _presenter.DefaultCalculation.View;
             string name = "Calculation " + CalculationsTabControl.TabPages.Count;
-            _presenter.AddDefaultCalculation(name);
-            var newP = CreateNewTabPage(calcView, name);
+            var calc = _presenter.AddDefaultCalculation(name);
+            var newP = CreateNewTabPage(calc);
             PushTabPage(newP);
             IsSelectedIndexChanged = true;
         }
@@ -217,19 +235,7 @@ namespace LaserDynamics.Clients.WinForms
             CalculationsTabControl.TabPages.Add(PlusTabPage);
             CalculationsTabControl.SelectedTab = page;
         }
-        void OpenCalculationTabPage(ICalculation calc)
-        {
-            IsSelectedIndexChanged = false;
-            string name = calc.Name;
-            var newP = CreateNewTabPage(calc.View, name);
-            //_presenter.CreateDefaultCalculation(name);
-            CalculationsTabControl.TabPages.Add(newP);
-            CalculationsTabControl.SelectedTab = newP;
-            CalculationsTabControl.TabPages.Remove(PlusTabPage);
-            CalculationsTabControl.TabPages.Add(PlusTabPage);
-            IsSelectedIndexChanged = true;
-        }
-        TableLayoutPanel CreateControlElementsPanel(string pageName)
+        TableLayoutPanel CreateControlElementsPanel(string id)
         {
             var bigTable = CreateTableLayoutPanel("", 1, 8);
             bigTable.Margin = new Padding(0, 0, 0, 0);
@@ -292,38 +298,37 @@ namespace LaserDynamics.Clients.WinForms
             numMethodCombo.Anchor = AnchorStyles.Top & AnchorStyles.Bottom;
             bigTable.Controls.Add(numMethodCombo);
 
-            //ControlElements.Add(new KeyValuePair<string, Control[]>(pageName, new Control[] { StartBtn, StopBtn, CloseBtn, modelCombo, calcCombo, numMethodCombo }));
-            //SetControlEvent(pageName);
-            SetControlEvent(pageName, StartBtn, StopBtn, CloseBtn, modelCombo, calcCombo, numMethodCombo);
+            ControlElements.Add(new KeyValuePair<string, Control[]>(id, new Control[] { StartBtn, StopBtn, CloseBtn, modelCombo, calcCombo, numMethodCombo }));
+            SetControlEvent(id);
             return topTable;
         }
-        void SetControlEvent(string pageName, params Control[] controls)
+        void SetControlEvent(string id)
         {
-            //var controls = ControlElements.FirstOrDefault(ce => ce.Key == pageName);
-            var StartBtn = controls.FirstOrDefault(c => c.Name == "Start") as Button;
-            var StopBtn = controls.FirstOrDefault(c => c.Name == "Stop") as Button;
-            var CloseBtn = controls.FirstOrDefault(c => c.Name == "Close") as Button;
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+            var StartBtn = controls.Value.FirstOrDefault(c => c.Name == "Start") as Button;
+            var StopBtn = controls.Value.FirstOrDefault(c => c.Name == "Stop") as Button;
+            var CloseBtn = controls.Value.FirstOrDefault(c => c.Name == "Close") as Button;
             
             StartBtn.Click += async (s, e) =>
             {
                 ReverseButtonsState(StartBtn, StopBtn);
-                CalculationsTabControl.TabPages[pageName].Controls[0].Controls["StateLabel"].Text = "Started...";
-                await _presenter.StartCalculation(pageName);
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Started...");
+                await _presenter.StartCalculation();
             };
             StopBtn.Click += (s, e) =>
             {
-                _presenter.StopCalculation(pageName);
+                _presenter.StopCalculation();
             };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName).OnCalculationValidationFailed += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationValidationFailed += (s, e) =>
                 {
                     ReverseButtonsState(StartBtn, StopBtn);
-                    (CalculationsTabControl.TabPages[pageName].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Validation Error."); 
+                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Validation Error."); 
                     MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
                 };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName).OnCalculationFinish += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationFinish += (s, e) =>
             {
-                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName);
-                var stateLabel = CalculationsTabControl.TabPages[pageName].Controls[0].Controls["StateLabel"] as Label;
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+                var stateLabel = CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label;
                 if (calc.ErrorMessage != null)
                 {
                     stateLabel.SetTextInvoke("Error: " + calc.ErrorMessage);
@@ -338,36 +343,29 @@ namespace LaserDynamics.Clients.WinForms
                 }
                 ReverseButtonsState(StartBtn, StopBtn);
             };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName).OnCalculationError += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationError += (s, e) =>
             {
-                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName);
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
                 if (calc.ErrorMessage != null)
                 {
-                    (CalculationsTabControl.TabPages[pageName].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Error: " + calc.ErrorMessage);
+                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Error: " + calc.ErrorMessage);
                 }
                 ReverseButtonsState(StartBtn, StopBtn);
             };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName).OnCalculationReport += (s, e) =>
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationReport += (s, e) =>
             {
-                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.Name == pageName);
-                (CalculationsTabControl.TabPages[pageName].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
             };
-            CloseBtn.Click += (s, e) => ClosePage(pageName);
+            CloseBtn.Click += (s, e) => Close(id);
             
         }
-        void ClosePage(string pageName)
-        {
-            _presenter.RemoveCalculation(pageName);
-            //var controls = ControlElements.FirstOrDefault(ce => ce.Key == pageName);
-            //ControlElements.Remove(controls);
-            int index = CalculationsTabControl.TabPages.IndexOf(CalculationsTabControl.SelectedTab);
-            CalculationsTabControl.TabPages.Remove(CalculationsTabControl.SelectedTab);
-            CalculationsTabControl.SelectTab(index - 1>-1 ? index-1 : 0);
-        }
-        TabPage CreateNewTabPage(ICalculationView template, string name)
+        TabPage CreateNewTabPage(ICalculation calc)
         {
             var newPage = new TabPage();
-            newPage.Name = name;
+            var name = calc.Name;
+            var template = calc.View;
+            newPage.Name = calc.CalculationId;
             newPage.Text = name;
             newPage.Padding = new Padding(1, 1, 1, 1);
             newPage.AutoScroll = true;
@@ -377,7 +375,7 @@ namespace LaserDynamics.Clients.WinForms
             tablePanel.RowStyles[1] = new RowStyle(SizeType.Percent, 100F);
             tablePanel.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, 100F);
             newPage.Controls.Add(tablePanel);
-            var newGroup = CreateControlElementsPanel(name);
+            var newGroup = CreateControlElementsPanel(newPage.Name);
             newGroup.Margin = new Padding(0, 0, 0, 0);
             tablePanel.Controls.Add(newGroup);
             var smallTable = CreateCalculationPanel(template);
@@ -425,7 +423,7 @@ namespace LaserDynamics.Clients.WinForms
                                     tbl.Controls.Add(newLbl);
                                     tbl.Controls.Add(clb);
                                     CLB.Add(clb);
-                                    clb.ItemCheck += (s, e) => CalculationChanged();
+                                    clb.ItemCheck += (s, e) => CalculationChanged(_presenter.CurrentCalculation);
                                 }
                                 clb.Items.Add(attr.Title, (bool)member.GetValue(tempate));
                             }
@@ -453,7 +451,7 @@ namespace LaserDynamics.Clients.WinForms
                                     table.RowCount++;
                                 table.Controls.Add(newLabel);
                                 table.Controls.Add(newCB);
-                                newCB.CheckedChanged += (s, e) => CalculationChanged();
+                                newCB.CheckedChanged += (s, e) => CalculationChanged(_presenter.CurrentCalculation);
                             }
                             break;
                         }
@@ -479,7 +477,7 @@ namespace LaserDynamics.Clients.WinForms
                                 table.RowCount++;
                             table.Controls.Add(newLabel);
                             table.Controls.Add(newCombo);
-                            newCombo.SelectedIndexChanged += (s, e) => CalculationChanged();
+                            newCombo.SelectedIndexChanged += (s, e) => CalculationChanged(_presenter.CurrentCalculation);
                             break;
                         }
                     default:
@@ -505,7 +503,7 @@ namespace LaserDynamics.Clients.WinForms
                             table.Controls.Add(newLabel, 0, table.RowCount - 1);
                             table.Controls.Add(newTB, 1, table.RowCount - 1);
                             var errorMessage = "";
-                            newTB.TextChanged += (s, e) => CalculationChanged();
+                            newTB.TextChanged += (s, e) => CalculationChanged(_presenter.CurrentCalculation);
                             newTB.Leave += (s, e) =>
                             {
                                 if (!TrySetValueToView(member, attr, newTB.Text, out errorMessage))
@@ -525,12 +523,21 @@ namespace LaserDynamics.Clients.WinForms
             smallTable.Controls.AddRange(GroupBoxes.ToArray());
             return smallTable;
         }
-        void CalculationChanged()
+        void CalculationChanged(ICalculation calc)
         {
-            if (_presenter.CurrentCalculation.IsSaved)
+            if (calc.IsSaved)
             {
-                _presenter.CurrentCalculation.IsSaved = false;
-                CalculationsTabControl.SelectedTab.Text = _presenter.CurrentCalculation.Name + "*";
+                calc.IsSaved = false;
+                CalculationsTabControl.TabPages[calc.CalculationId].Text = calc.Name + "*";
+                //CalculationsTabControl.SelectedTab.();
+            }
+        }
+        void CalculationSaved(ICalculation calc)
+        {
+            if (!calc.IsSaved)
+            {
+                calc.IsSaved = true;
+                CalculationsTabControl.TabPages[calc.CalculationId].Text = calc.Name;
                 //CalculationsTabControl.SelectedTab.();
             }
         }

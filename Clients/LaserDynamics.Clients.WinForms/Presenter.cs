@@ -19,8 +19,6 @@ namespace LaserDynamics.Clients.WinForms
     public class Presenter : ILaserCalculator
     {
         public ILaserModelAccessor Accessor { get; set; }
-        public event EventHandler OnCalculationStopped;
-
         public Presenter()
         {
             Accessor = new AssemblyAccessor();
@@ -29,13 +27,9 @@ namespace LaserDynamics.Clients.WinForms
             OpenCalculations = new List<ICalculation>();
         }
 
-        public async Task StartCalculation(string calcName)
+        public async Task StartCalculation()
         {
-            //if (!_view.IsValid()) // реализовать методом презентера
-            //return;
             var calc = CurrentCalculation;
-            if (calc == null)
-                throw new NullReferenceException("Не найдено вычисление с именем '" + calcName + "'.");
             await Task.Factory.StartNew(() => calc.Calculate());
         }
         void CalculateIt()
@@ -46,26 +40,36 @@ namespace LaserDynamics.Clients.WinForms
             timer.Stop();
             MessageBox.Show("Success! " + timer.ElapsedMilliseconds);
         }
-        public void ResumeCalculation(string calcName)
+        public void ResumeCalculation()
         {
 
         }
-        public void StopCalculation(string calcName)
+        public void StopCalculation()
         {
             CurrentCalculation.OnCalculationStopped();
         }
-        public void ShowResults(string calcName)
+        public void ShowResults()
         {
 
         }
-        public void RemoveCalculation(string calcName)
+        public void RemoveCalculation(string id)
         {
-            var calc = OpenCalculations.FirstOrDefault(c => c.Name == calcName);
+            var calc = OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
             if (calc == null)
-                throw new NullReferenceException("Не найдено вычисление с именем '" + calcName + "'.");
+                throw new NullReferenceException("Не найдено вычисление с идентификатором '" + id + "'.");
             if (calc.Status == CalculationStatus.Running)
                 calc.OnCalculationStopped();
             OpenCalculations.Remove(calc);
+        }
+        public void RemoveCalculation(ICalculation calc)
+        {
+            if (calc == null)
+                throw new NullReferenceException("Не найдено вычисление '" + calc.Name + "'.");
+            if (calc.Status == CalculationStatus.Running)
+                calc.OnCalculationStopped();
+            OpenCalculations.Remove(calc);
+            if (CurrentCalculation == calc)
+                CurrentCalculation = OpenCalculations.FirstOrDefault();
         }
 
         public IList<ICalculation> OpenCalculations { get; set; }
@@ -114,16 +118,19 @@ namespace LaserDynamics.Clients.WinForms
         }
         #endregion
 
-        public void AddDefaultCalculation(string calcName)
+        public ICalculation AddDefaultCalculation(string calcName)
         {
             var newCalc = DefaultCalculation.CloneCalculation();
             newCalc.Name = calcName;
+            newCalc.CalculationId = Guid.NewGuid().ToString();
             OpenCalculations.Add(newCalc);
             CurrentCalculation = newCalc;
+            return newCalc;
         }
         public void AddCalculation(ICalculation calc)
         {
             OpenCalculations.Add(calc);
+            calc.CalculationId = Guid.NewGuid().ToString();
             CurrentCalculation = calc;
         }
         public void ReplaceCalculation(ICalculation one, ICalculation byAnother)

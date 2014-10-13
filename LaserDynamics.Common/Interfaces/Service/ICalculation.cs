@@ -8,6 +8,7 @@ namespace LaserDynamics.Common
 {
     public interface ICalculation
     {
+        string CalculationId { get; set; }
         string Name { get; set; }
         ICalculationWorkspace Workspace { get; set; }
         ICalculationView View { get; set; }

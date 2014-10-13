@@ -19,14 +19,12 @@ namespace LaserDynamics.Common
         ICalculation OpenCalculation(string path);
         void SaveCalculation(ICalculation calculation, string path);
 
-        void AddDefaultCalculation(string calcName);
+        ICalculation AddDefaultCalculation(string calcName);
         void RemoveCalculation(string calcName);
 
-        Task StartCalculation(string calcName);
-        void ResumeCalculation(string calcName);
-        void StopCalculation(string calcName);
-        void ShowResults(string calcName);
-
-        event EventHandler OnCalculationStopped;
+        Task StartCalculation();
+        void ResumeCalculation();
+        void StopCalculation();
+        void ShowResults();
     }
 }

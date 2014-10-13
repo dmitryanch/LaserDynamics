@@ -8,6 +8,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
 {
     public class Ssfm1dCalculation : ICalculation 
     {
+        public string CalculationId { get; set; }
         public Ssfm1dCalculation()
         {
             View = new Ssfm1dView();
