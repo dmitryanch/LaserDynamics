@@ -9,5 +9,9 @@ namespace LaserDynamics.Common
     public interface ICalculationWorkspace
     {
         bool IsValid();
+        void DoIteration(long numIteration);
+        void Initialize(ICalculationView View);
+        void SetParameters();
+        object GetResult(ICalculationView view);
     }
 }

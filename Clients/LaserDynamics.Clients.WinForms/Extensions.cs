@@ -14,15 +14,12 @@ namespace LaserDynamics.Clients.WinForms
         {
             var ctor = calc.GetType().GetConstructor(new Type[0]);
             var obj = (T)ctor.Invoke(new object[0]);
-            //obj.Workspace.OnCalculationStart += (s, e) => { };
-            //obj.Workspace.OnCalculationReport += (s, e) =>  { };
-            //obj.Workspace.OnCalculationError += (s, e) => { };
-            //obj.Workspace.OnCalculationFinish += (s, e) => { };
             obj.IsSaved = true;
             obj.Path = null;
             return obj;
         }
     }
+    // Extension with delegates for multithreading operations with UI-controls
     static public class Extensions
     {
         delegate void SetEnable(bool enabled);

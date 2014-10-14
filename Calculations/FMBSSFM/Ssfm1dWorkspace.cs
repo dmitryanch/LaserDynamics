@@ -66,25 +66,32 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
 
         public Stopwatch ffttimer = new Stopwatch();
         public Stopwatch normtimer = new Stopwatch();
-
         #endregion
-        #region Private Methods
-        public void Set(Complex[] from, Complex[] to)
-        {
-            for (int i = 0; i < from.Length; i++)
-            {
-                to[i] = from[i];
-            }
-        }
-        public void Set(double[] from, double[] to)
-        {
-            for (int i = 0; i < from.Length; i++)
-            {
-                to[i] = from[i];
-            }
-        }
 
-        public void SetSpaceFrequency()
+        #region Private Properties
+        Complex[] LocalField { get; set; }
+        double[] LocalIntensity { get; set; }
+        double[] LocalInversion { get; set; }
+        double[] LocalPhase { get; set; }
+        Complex[] LocalPolarization { get; set; }
+        #endregion
+
+        #region Private Model Methods
+        void Set(Complex[] from, Complex[] to)
+        {
+            for (int i = 0; i < from.Length; i++)
+            {
+                to[i] = from[i];
+            }
+        }
+        void Set(double[] from, double[] to)
+        {
+            for (int i = 0; i < from.Length; i++)
+            {
+                to[i] = from[i];
+            }
+        }
+        void SetSpaceFrequency()
         {
             K = new double[Nx];
             for (int i = 0; i < Nx; i++)
@@ -94,8 +101,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             }
             Fourier.fftShift(K);
         }
-
-        public void SetPumping(double X)
+        void SetPumping(double X)
         {
             R = new double[Nx];
             for (int i = 0; i < Nx; i++)
@@ -103,7 +109,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 R[i] = X;
             }
         }
-        public void SetLosses(double X)
+        void SetLosses(double X)
         {
             Sigma = new double[Nx];
             for (int i = 0; i < Nx; i++)
@@ -111,7 +117,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 Sigma[i] = X;
             }
         }
-        public void SetInitials()
+        void SetInitials()
         {
             for (int i = 0; i < Nx; i++)
             {
@@ -121,7 +127,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             }
             E[0] = E[0] + 1e-10;
         }
-        public void SetExtraConstants()
+        void SetExtraConstants()
         {
             exp1 = Math.Exp(-gamma * dt / 2);
             exp2 = Complex.Exp(new Complex(-dt / 2, -delta * dt / 2));
@@ -131,7 +137,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 exp4[i] = Sigma[i] / new Complex(Sigma[i] - 1.0, a * K[i] - delta);
             }
         }
-        public double NormsComparison(Complex[] A1, Complex[] A2)
+        double NormsComparison(Complex[] A1, Complex[] A2)
         {
             var dA = new double[Nx];
             var A = new double[Nx];
@@ -143,7 +149,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             double res = dA.Max() / A.Max();
             return res;
         }
-        public double NormsComparison(double[] A1, double[] A2)
+        double NormsComparison(double[] A1, double[] A2)
         {
             var dA = new double[Nx];
             var A = new double[Nx];
@@ -155,6 +161,28 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             double res = dA.Max() / A.Max();
             return res;
         }
+        double[] GetPow2Abs(Complex[] A)
+        {
+            var R = new double[Nx];
+            for (int i = 0; i < Nx; i++)
+                R[i] = Math.Pow(A[i].Abs, 2);
+            return R;
+        }
+        double[] GetPhase(Complex[] A)
+        {
+            var R = new double[Nx];
+            for (int i = 0; i < Nx; i++)
+                R[i] = A[i].Arg;
+            return R;
+        }
+        double[] GetSpectrum(Complex[] A)
+        {
+            var R = new double[Nx];
+            var F = Fourier.FFT(A);
+            for (int i = 0; i < Nx; i++)
+                R[i] = Math.Pow(F[i].Abs, 2);
+            return R;
+        }
         #endregion
 
         #region Public Methods
@@ -163,6 +191,30 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             if (ElRelax == 0 || PolRelax == 0 || InvRelax == 0 || delta == 0 || r == 0 || a == 0 || Nx == 0 || L == 0 || Nt == 0 || dt == 0)
                 return false;
             return true;
+        }
+        public void Initialize(ICalculationView View)
+        {
+            var view = (View as Ssfm1dView);
+
+            Nx = view.NumNodes;
+            L = view.ApertureSize;
+            dt = view.TimeStep;
+            Nt = view.TotalTime;
+
+            ElRelax = view.ElectricRelax;
+            PolRelax = view.PolarizationRelax;
+            InvRelax = view.InversionRelax;
+            gamma = view.InversionRelax / view.PolarizationRelax;
+            sigma = view.ElectricRelax / view.PolarizationRelax;
+            delta = view.Detuning;
+            r = view.Pumping;
+            a = view.Diffraction;
+
+            LocalField = view.OutLocalField ? new Complex[Nt] : null;
+            LocalIntensity = view.OutLocalIntensity ? new double[Nt] : null;
+            LocalInversion = view.OutLocalInversion ? new double[Nt] : null;
+            LocalPhase = view.OutLocalPhase ? new double[Nt] : null;
+            LocalPolarization = view.OutLocalPolarization ? new Complex[Nt] : null;
         }
         public void SetParameters()
         {
@@ -197,7 +249,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             SetInitials();
             SetExtraConstants();
         }
-        public void DoIteration()
+        public void DoIteration(long numIteration)
         {
             ffttimer.Start();
             Ef = Fourier.FFT(E);
@@ -282,6 +334,53 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             E = Ec;
             P = Pc;
             D = Dc;
+
+            LocalField[numIteration] = E[Nx / 2];
+            LocalIntensity[numIteration] = Math.Pow(E[Nx / 2].Abs, 2);
+            LocalInversion[numIteration] = D[Nx / 2];
+            LocalPhase[numIteration] = E[Nx / 2].Arg;
+            LocalPolarization[numIteration] = P[Nx / 2];
+        }
+        public object GetResult(ICalculationView View)
+        {
+            var view = View as Ssfm1dView;
+            //List<object> list = new List<object>();
+            //if (view.OutFieldDistibution)
+            //    list.Add(E);
+            //if (view.OutIntensityDistibution)
+            //    list.Add(GetPow2Abs(E));
+            //if (view.OutInversionDistibution)
+            //    list.Add(D);
+            //if (view.OutLocalField)
+            //    list.Add(LocalField);
+            //if (view.OutLocalIntensity)
+            //    list.Add(LocalIntensity);
+            //if (view.OutLocalInversion)
+            //    list.Add(LocalInversion);
+            //if (view.OutLocalPhase)
+            //    list.Add(LocalPhase);
+            //if (view.OutLocalPolarization)
+            //    list.Add(LocalPolarization);
+            //if (view.OutPhaseDistibution)
+            //    list.Add(GetPhase(E));
+            //if (view.OutPolarizationDistibution)
+            //    list.Add(P);
+            //if (view.OutSpectrumDistibution)
+            //    list.Add(GetSpectrum(E));
+            //return list.ToArray();
+            return new {
+                            OutFieldDistibution = view.OutFieldDistibution? E : null,
+                            OutIntensityDistibution = view.OutIntensityDistibution ? GetPow2Abs(E) : null,
+                            OutInversionDistibution = view.OutInversionDistibution ? D : null,
+                            OutLocalField = view.OutLocalField ? LocalField : null,
+                            OutLocalIntensity = view.OutLocalIntensity ? LocalIntensity : null,
+                            OutLocalInversion = view.OutLocalInversion ? LocalInversion : null,
+                            OutLocalPhase = view.OutLocalPhase ? LocalPhase : null,
+                            OutLocalPolarization = view.OutLocalPolarization ? LocalPolarization : null,
+                            OutPhaseDistibution = view.OutPhaseDistibution ? GetPhase(E) : null,
+                            OutPolarizationDistibution = view.OutPolarizationDistibution ? P : null,
+                            OutSpectrumDistibution = view.OutSpectrumDistibution ? GetSpectrum(E) : null
+                        } as object;
         }
         #endregion
     }

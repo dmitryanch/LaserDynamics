@@ -6,7 +6,7 @@ using LaserDynamics.Common;
 
 namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
 {
-    public class Ssfm1dCalculation : ICalculation 
+    public class Ssfm1dCalculation : ICalculation
     {
         public string CalculationId { get; set; }
         public Ssfm1dCalculation()
@@ -27,7 +27,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             {
                 var workspace = Workspace as Ssfm1dWorkspace;
 
-                SetParametersFromViewToWorkSpace();
+                workspace.Initialize(View);
                 if (!workspace.IsValid())
                 {
                     Status = CalculationStatus.ValidationFailed;
@@ -35,7 +35,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                         OnCalculationValidationFailed(this, new EventArgs());
                     return;
                 }
-                workspace.SetParameters(); 
+                workspace.SetParameters();
                 Status = CalculationStatus.Running;
                 ErrorMessage = null;
                 ReportMessage = "0";
@@ -50,7 +50,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                     if (Status == CalculationStatus.Stopped)
                         break;
 
-                    workspace.DoIteration();
+                    workspace.DoIteration(q);
 
                     var newReport = ((int)Math.Floor((double)q / workspace.Nt * 100)).ToString();
                     if (newReport != ReportMessage)
@@ -65,7 +65,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 sumtimer.Stop();
                 if (OnCalculationFinish != null)
                 {
-                    if(Status == CalculationStatus.Running)
+                    if (Status == CalculationStatus.Running)
                         Status = CalculationStatus.Finished;
                     OnCalculationFinish(this, new EventArgs());
                 }
@@ -80,32 +80,17 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 }
             }
         }
-        public void SetParametersFromViewToWorkSpace()
-        {
-            var view = (View as Ssfm1dView);
-            var workspace = Workspace as Ssfm1dWorkspace;
-
-            workspace.Nx = view.NumNodes;
-            workspace.L = view.ApertureSize;
-            workspace.dt = view.TimeStep;
-            workspace.Nt = view.TotalTime;
-
-            workspace.ElRelax = view.ElectricRelax;
-            workspace.PolRelax = view.PolarizationRelax;
-            workspace.InvRelax = view.InversionRelax;
-            workspace.gamma = view.InversionRelax / view.PolarizationRelax;
-            workspace.sigma = view.ElectricRelax / view.PolarizationRelax;
-            workspace.delta = view.Detuning;
-            workspace.r = view.Pumping;
-            workspace.a = view.Diffraction;
-        }
         public long[] GetStats()
         {
             var workspace = Workspace as Ssfm1dWorkspace;
             return new long[3] { sumtimer.ElapsedMilliseconds, workspace.ffttimer.ElapsedMilliseconds, workspace.normtimer.ElapsedMilliseconds };
         }
-        public void GetResults()
-        { }
+        public object GetResult()
+        {
+            if (Status != CalculationStatus.Running)
+                return null;
+            return Workspace.GetResult(View);
+        }
         public string ErrorMessage { get; set; }
         public string ReportMessage { get; set; }
         public CalculationStatus Status { get; set; }
@@ -113,6 +98,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         {
             Status = CalculationStatus.Stopped;
         }
+        
         #region Public Events
         public event EventHandler OnCalculationFinish;
         public event EventHandler OnCalculationStart;

@@ -15,7 +15,7 @@ namespace LaserDynamics.Common
 
         void Calculate();
         long[] GetStats();
-        void GetResults();
+        object GetResult();
         event EventHandler OnCalculationFinish;
         event EventHandler OnCalculationStart;
         event EventHandler OnCalculationError;
