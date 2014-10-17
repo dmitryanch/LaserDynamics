@@ -35,6 +35,7 @@ namespace LaserDynamics.Clients.WinForms
             ExitMenuItem.Click += (s, e) => Exit();
             RenameMenuItem.Click += (s, e) => Rename();
             CalculationsTabControl.SelectedIndexChanged += (s, e) => OnSelectedPageChanged();
+            DriveTreeInit();
         }
 
         #region UI - functions
