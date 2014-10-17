@@ -1,4 +1,5 @@
-﻿using LaserDynamics.Common;
+﻿using Jenyay.Mathematics;
+using LaserDynamics.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,27 +76,38 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
 
         // Results
         [DisplayTitle("Интенсивность", DataType.Bool, "Вывод результатов", "Локальная динамика")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutLocalIntensity { get; set; }
         [DisplayTitle("Оптическое поле", DataType.Bool, "Вывод результатов", "Локальная динамика")]
+        [Results(DemoType.None, typeof(Complex[]))]
         public bool OutLocalField { get; set; }
         [DisplayTitle("Фаза", DataType.Bool, "Вывод результатов", "Локальная динамика")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutLocalPhase { get; set; }
         [DisplayTitle("Поляризация", DataType.Bool, "Вывод результатов", "Локальная динамика")]
+        [Results(DemoType.None, typeof(Complex[]))]
         public bool OutLocalPolarization { get; set; }
         [DisplayTitle("Инверсия", DataType.Bool, "Вывод результатов", "Локальная динамика")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutLocalInversion { get; set; }
 
         [DisplayTitle("Интенсивность", DataType.Bool, "Вывод результатов", "Распределение")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutIntensityDistibution { get; set; }
         [DisplayTitle("Оптическое поле", DataType.Bool, "Вывод результатов", "Распределение")]
+        [Results(DemoType.Plot, typeof(Complex[]))]
         public bool OutFieldDistibution { get; set; }
         [DisplayTitle("Фаза", DataType.Bool, "Вывод результатов", "Распределение")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutPhaseDistibution { get; set; }
         [DisplayTitle("Пространственный спектр", DataType.Bool, "Вывод результатов", "Распределение")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutSpectrumDistibution { get; set; }
         [DisplayTitle("Поляризация", DataType.Bool, "Вывод результатов", "Распределение")]
+        [Results(DemoType.Plot, typeof(Complex[]))]
         public bool OutPolarizationDistibution { get; set; }
         [DisplayTitle("Инверсия", DataType.Bool, "Вывод результатов", "Распределение")]
+        [Results(DemoType.Plot, typeof(double[]))]
         public bool OutInversionDistibution { get; set; }
         #endregion
     }

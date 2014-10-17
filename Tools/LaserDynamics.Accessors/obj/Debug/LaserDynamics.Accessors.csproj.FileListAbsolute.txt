@@ -26,3 +26,4 @@ C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Debug\LaserDy
 C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
 C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.dll
 C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Debug\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Debug\Complex.dll

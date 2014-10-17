@@ -335,11 +335,16 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             P = Pc;
             D = Dc;
 
-            LocalField[numIteration] = E[Nx / 2];
-            LocalIntensity[numIteration] = Math.Pow(E[Nx / 2].Abs, 2);
-            LocalInversion[numIteration] = D[Nx / 2];
-            LocalPhase[numIteration] = E[Nx / 2].Arg;
-            LocalPolarization[numIteration] = P[Nx / 2];
+            if(LocalField != null)
+                LocalField[numIteration] = E[Nx / 2];
+            if (LocalIntensity != null) 
+                LocalIntensity[numIteration] = Math.Pow(E[Nx / 2].Abs, 2);
+            if (LocalInversion != null) 
+                LocalInversion[numIteration] = D[Nx / 2];
+            if (LocalPhase != null) 
+                LocalPhase[numIteration] = E[Nx / 2].Arg;
+            if (LocalPolarization != null) 
+                LocalPolarization[numIteration] = P[Nx / 2];
         }
         public object GetResult(ICalculationView View)
         {
@@ -368,19 +373,27 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             //if (view.OutSpectrumDistibution)
             //    list.Add(GetSpectrum(E));
             //return list.ToArray();
-            return new {
-                            OutFieldDistibution = view.OutFieldDistibution? E : null,
-                            OutIntensityDistibution = view.OutIntensityDistibution ? GetPow2Abs(E) : null,
-                            OutInversionDistibution = view.OutInversionDistibution ? D : null,
-                            OutLocalField = view.OutLocalField ? LocalField : null,
-                            OutLocalIntensity = view.OutLocalIntensity ? LocalIntensity : null,
-                            OutLocalInversion = view.OutLocalInversion ? LocalInversion : null,
-                            OutLocalPhase = view.OutLocalPhase ? LocalPhase : null,
-                            OutLocalPolarization = view.OutLocalPolarization ? LocalPolarization : null,
-                            OutPhaseDistibution = view.OutPhaseDistibution ? GetPhase(E) : null,
-                            OutPolarizationDistibution = view.OutPolarizationDistibution ? P : null,
-                            OutSpectrumDistibution = view.OutSpectrumDistibution ? GetSpectrum(E) : null
-                        } as object;
+            var x = new double[Nx];
+            for (int i = 0; i < Nx; i++)
+                x[i] = i + 1;
+            var nt = Enumerable.Range(1, Nt).ToArray();
+            var t = new double[Nt];
+            for (int i = 0; i < Nt; i++)
+                t[i] = dt*nt[i];
+            return new
+            {
+                OutFieldDistibution = view.OutFieldDistibution ? new CNumberResult{ X = x, Y = E } : null,
+                OutIntensityDistibution = view.OutIntensityDistibution ? new PlotResult{ X = x, Y = GetPow2Abs(E) } : null,
+                OutInversionDistibution = view.OutInversionDistibution ? new PlotResult { X = x, Y = D } : null,
+                OutLocalField = view.OutLocalField ? new CNumberResult { X = t, Y = LocalField } : null,
+                OutLocalIntensity = view.OutLocalIntensity ? new PlotResult { X = t, Y = LocalIntensity } : null,
+                OutLocalInversion = view.OutLocalInversion ? new PlotResult { X = t, Y = LocalInversion } : null,
+                OutLocalPhase = view.OutLocalPhase ? new PlotResult { X = t, Y = LocalPhase } : null,
+                OutLocalPolarization = view.OutLocalPolarization ? new CNumberResult { X = t, Y = LocalPolarization } : null,
+                OutPhaseDistibution = view.OutPhaseDistibution ? new PlotResult { X = x, Y = GetPhase(E) } : null,
+                OutPolarizationDistibution = view.OutPolarizationDistibution ? new CNumberResult { X = x, Y = P } : null,
+                OutSpectrumDistibution = view.OutSpectrumDistibution ? new PlotResult { X = x, Y = GetSpectrum(E) } : null
+            } as object;
         }
         #endregion
     }

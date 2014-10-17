@@ -11,6 +11,8 @@ using System.Globalization;
 using System.Reflection;
 using LaserDynamics.Common;
 using System.IO;
+using ZedGraph;
+using System.Drawing.Imaging;
 
 namespace LaserDynamics.Clients.WinForms
 {
@@ -239,7 +241,7 @@ namespace LaserDynamics.Clients.WinForms
             newPage.Text = name;
             newPage.Padding = new Padding(1, 1, 1, 1);
             newPage.AutoScroll = true;
-            var tablePanel = CreateTableLayoutPanel(name, 4, 1);
+            var tablePanel = CreateTableLayoutPanel(name, 5, 1);
             tablePanel.Margin = new Padding(1, 1, 1, 1);
             tablePanel.Padding = new Padding(0, 0, 0, 0);
             tablePanel.RowStyles[1] = new RowStyle(SizeType.Percent, 100F);
@@ -252,7 +254,7 @@ namespace LaserDynamics.Clients.WinForms
             tablePanel.Controls.Add(smallTable, 0, 1);
             var stateLabel = CreateLabel("Ready");
             stateLabel.Name = "StateLabel";
-            tablePanel.Controls.Add(stateLabel, 0, 3);
+            tablePanel.Controls.Add(stateLabel, 0, 4);
             return newPage;
         }
         void ReverseButtonsState(params Button[] btns)
@@ -350,7 +352,7 @@ namespace LaserDynamics.Clients.WinForms
             StartBtn.Click += async (s, e) =>
             {
                 ReverseButtonsState(StartBtn, StopBtn);
-                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Started...");
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Started...");
                 await _presenter.StartCalculation();
             };
             StopBtn.Click += (s, e) =>
@@ -360,13 +362,13 @@ namespace LaserDynamics.Clients.WinForms
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationValidationFailed += (s, e) =>
                 {
                     ReverseButtonsState(StartBtn, StopBtn);
-                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Validation Error."); 
+                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Validation Error."); 
                     MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
                 };
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationFinish += (s, e) =>
             {
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
-                var stateLabel = CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label;
+                var stateLabel = CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label;
                 if (calc.ErrorMessage != null)
                 {
                     stateLabel.SetTextInvoke("Error: " + calc.ErrorMessage);
@@ -378,6 +380,11 @@ namespace LaserDynamics.Clients.WinForms
                 else
                 {
                     stateLabel.SetTextInvoke("Succesefully performed: " + string.Join(", ", calc.GetStats().Select(st => st.ToString() + " ms")));
+                    this.Invoke(new MethodInvoker(() =>
+                    {
+                        HideResults(id);
+                        ShowResults(id);
+                    }));
                 }
                 ReverseButtonsState(StartBtn, StopBtn);
             };
@@ -386,22 +393,132 @@ namespace LaserDynamics.Clients.WinForms
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
                 if (calc.ErrorMessage != null)
                 {
-                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Error: " + calc.ErrorMessage);
+                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Error: " + calc.ErrorMessage);
                 }
                 ReverseButtonsState(StartBtn, StopBtn);
             };
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationReport += (s, e) =>
             {
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
-                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
             };
             CloseBtn.Click += (s, e) => Close(id);
             
         }
-        FlowLayoutPanel CreateCalculationResultsPanel(ICalculationView tempate)
+        TableLayoutPanel CreateResultsControlPanel(string id)
         {
-            var flowPanel = new FlowLayoutPanel();
-            return flowPanel;
+            var table = CreateTableLayoutPanel("CalculationResultsControlPanel", 1, 3);
+            table.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, 100F);
+            var resultLabel = CreateLabel("Results");
+            var saveBtn = CreateButton("Save all results");
+            saveBtn.Click += (s, e) => SaveAllImages(id);
+            var CloseBtn = CreateButton("Close");
+            CloseBtn.Text = "";
+            CloseBtn.Image = new Bitmap(@"close.png");
+            CloseBtn.Size = new Size(20, 20);
+            CloseBtn.Click += (s, e) => HideResults(id);
+            table.Controls.Add(resultLabel, 0, 0);
+            table.Controls.Add(saveBtn, 1, 0);
+            table.Controls.Add(CloseBtn, 2, 0);
+
+            return table;
+        }
+        //FlowLayoutPanel CreateResultsPanel()
+        //{
+
+        //}
+        void ShowResults(string id)
+        {
+            var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+            var view = calc.View;
+            var result = calc.GetResult();
+            if (result == null)
+                return;
+            var propDictionary = new Dictionary<string, object>();
+            foreach (var prop in result.GetType().GetProperties())
+            {
+                var value = prop.GetValue(result);
+                if (value != null)
+                    propDictionary.Add(prop.Name, value);
+            }
+            if (!propDictionary.Any())
+                return;
+            var smallTable = CreateFlowLayoutPanel("CalculationResultsPanel");
+            smallTable.Padding = new Padding(1, 1, 1, 1);
+            
+            foreach (var member in view.GetType().GetProperties())
+            {
+                var attr = (DisplayTitleAttribute)member.GetCustomAttribute(typeof(DisplayTitleAttribute));
+                var resAttr = (ResultsAttribute)member.GetCustomAttribute(typeof(ResultsAttribute));
+                if (attr == null || resAttr == null)
+                    continue; 
+                object value = null;
+                if(!propDictionary.TryGetValue(member.Name,out value))
+                    continue;
+                switch (resAttr.DemoType)
+                {
+                    case DemoType.Plot:
+                        var plot = CreatePlot(attr.Title, value);
+                        if (plot == null)
+                            continue;
+                        //var group = CreateGroupBox(member.Name);
+                        //group.Controls.Add(plot);
+                        smallTable.Controls.Add(plot);
+                        break;
+                    case DemoType.Image:
+                        
+                        break;
+                }
+            }
+            if (smallTable.Controls.Count > 0)
+            {
+                var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
+                table.RemoveByKeyControlInvoke("CalculationResultsPanel");
+                var controlPanel = CreateResultsControlPanel(id);
+                table.Controls.Add(controlPanel, 0, 2);
+                table.Controls.Add(smallTable, 0, 3);
+                table.RowStyles[1] = new RowStyle(SizeType.Percent, 50F);
+                table.RowStyles[3] = new RowStyle(SizeType.Percent, 50F);
+            }
+        }
+        ZedGraphControl CreatePlot(string name, object obj)
+        {
+            var zedGraph = new ZedGraphControl();
+            zedGraph.Size = new System.Drawing.Size(500, 350);
+            //zedGraph.AutoSize = true;
+            zedGraph.Name = name;
+            zedGraph.GraphPane = new GraphPane();
+            // Создадим список точек
+            PointPairList list = new PointPairList();
+            var X = ((dynamic)obj).X;           // новый класс PlotResult
+            var Y = ((dynamic)obj).Y;
+            if (X == null || Y == null)
+                return null;
+            for (int i = 0; i < (X as Array).Length; i++)
+            {
+                list.Add(X[i], Y[i]);
+            }
+            // Создадим кривую с названием "Sinc", 
+            // которая будет рисоваться голубым цветом (Color.Blue),
+            // Опорные точки выделяться не будут (SymbolType.None)
+            LineItem myCurve = new LineItem(name, list, Color.Blue, SymbolType.None);
+            zedGraph.GraphPane.CurveList.Add(myCurve);
+            // Вызываем метод AxisChange (), чтобы обновить данные об осях. 
+            // В противном случае на рисунке будет показана только часть графика, 
+            // которая умещается в интервалы по осям, установленные по умолчанию
+            zedGraph.AxisChange();
+
+            // Обновляем график
+            zedGraph.Invalidate();
+            //zedGraph.Show();
+            return zedGraph;
+        }
+        void HideResults(string id)
+        {
+            var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
+            table.Controls.RemoveByKey("CalculationResultsControlPanel"); 
+            table.Controls.RemoveByKey("CalculationResultsPanel");
+            table.RowStyles[1] = new RowStyle(SizeType.Percent, 100F);           
         }
         FlowLayoutPanel CreateCalculationPanel(ICalculationView tempate)
         {
@@ -669,9 +786,9 @@ namespace LaserDynamics.Clients.WinForms
             newTB.Dock = DockStyle.Fill;
             return newTB;
         }
-        Label CreateLabel(string name)
+        System.Windows.Forms.Label CreateLabel(string name)
         {
-            var newLabel = new Label();
+            var newLabel = new System.Windows.Forms.Label();
             newLabel.Text = name;
             newLabel.Dock = DockStyle.Fill;
             newLabel.AutoSize = true;
@@ -711,6 +828,86 @@ namespace LaserDynamics.Clients.WinForms
             flowPanel.WrapContents = true;
             flowPanel.Dock = DockStyle.Fill;
             return flowPanel;
+        }
+        #endregion
+
+        #region 2d-plot creating
+        void SaveAllImages(string id)
+        {
+            var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
+            var plots = table.Controls["CalculationResultsPanel"].Controls;
+
+            foreach (var plot in plots)
+            {
+                SaveFileDialog dlg = new SaveFileDialog();
+                dlg.Filter = "*.png|*.png|*.jpg; *.jpeg|*.jpg;*.jpeg|*.bmp|*.bmp|Все файлы|*.*";
+                dlg.FileName = (plot as ZedGraphControl).Name;
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    // Получием панель по ее индексу
+                    GraphPane pane = (plot as ZedGraphControl).MasterPane.PaneList[0];
+
+                    // Получаем картинку, соответствующую панели
+                    Bitmap bmp = pane.GetImage();
+
+                    // Сохраняем картинку средствами класса Bitmap
+                    // Формат картинки выбирается исходя из имени выбранного файла
+                    if (dlg.FileName.EndsWith(".png"))
+                    {
+                        bmp.Save(dlg.FileName, ImageFormat.Png);
+                    }
+                    else if (dlg.FileName.EndsWith(".jpg") || dlg.FileName.EndsWith(".jpeg"))
+                    {
+                        bmp.Save(dlg.FileName, ImageFormat.Jpeg);
+                    }
+                    else if (dlg.FileName.EndsWith(".bmp"))
+                    {
+                        bmp.Save(dlg.FileName, ImageFormat.Bmp);
+                    }
+                    else
+                    {
+                        bmp.Save(dlg.FileName);
+                    }
+                }
+            }
+        }
+        Bitmap CreateBitmap(double[,] arr,Color scheme)
+        {
+            int width = arr.GetLength(0);
+            int height = arr.GetLength(1);
+            
+            double max = 0;
+            for (int i = 0; i < width; i++)
+                for (int j = 0; j < height; j++)
+                    if (max < arr[i, j])
+                        max = arr[i, j];
+
+            double min = 0;
+            for (int i = 0; i < width; i++)
+                for (int j = 0; j < height; j++)
+                    if (min > arr[i, j])
+                        min = arr[i, j];
+
+            Bitmap image = new Bitmap(width, height);
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    image.SetPixel(i, j, GetColor(arr[i, j], min, max, scheme));
+                }
+            }
+            return image;
+        }
+        Color GetColor(double value, double min, double max, Color scheme)
+        {
+            return Color.FromArgb(GetRGB(value, min, max, scheme.R), GetRGB(value, min, max, scheme.G), GetRGB(value, min, max, scheme.B));
+        }
+        int GetRGB(double value, double min, double max, int colorCheme) // int GetRed/GetGreen/GetBlue( .., color-scheme)
+        {
+            if (min>max || value < min || value > max)
+                throw new Exception();
+            return (int)Math.Floor((value - min) / (max - min) * colorCheme);
         }
         #endregion
     }

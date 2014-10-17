@@ -37,7 +37,9 @@
             this.SaveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveAsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CloseMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RenameMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.calculationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,8 +51,6 @@
             this.RightMainTable = new System.Windows.Forms.TableLayoutPanel();
             this.LeftMainTable = new System.Windows.Forms.TableLayoutPanel();
             this.ErrorToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.RenameMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             this.CalculationsTabControl.SuspendLayout();
             this.MainTable.SuspendLayout();
@@ -113,6 +113,12 @@
             this.CloseMenuItem.Size = new System.Drawing.Size(162, 22);
             this.CloseMenuItem.Text = "Закрыть";
             // 
+            // ExitMenuItem
+            // 
+            this.ExitMenuItem.Name = "ExitMenuItem";
+            this.ExitMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.ExitMenuItem.Text = "Выйти";
+            // 
             // EditMenuItem
             // 
             this.EditMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -120,6 +126,12 @@
             this.EditMenuItem.Name = "EditMenuItem";
             this.EditMenuItem.Size = new System.Drawing.Size(99, 20);
             this.EditMenuItem.Text = "Редактировать";
+            // 
+            // RenameMenuItem
+            // 
+            this.RenameMenuItem.Name = "RenameMenuItem";
+            this.RenameMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.RenameMenuItem.Text = "Переименовать вычисление";
             // 
             // calculationToolStripMenuItem
             // 
@@ -135,20 +147,20 @@
             // 
             this.startToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("startToolStripMenuItem.Image")));
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.startToolStripMenuItem.Text = "Запустить";
             // 
             // stopToolStripMenuItem
             // 
             this.stopToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("stopToolStripMenuItem.Image")));
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.stopToolStripMenuItem.Text = "Остановить";
             // 
             // showToolStripMenuItem
             // 
             this.showToolStripMenuItem.Name = "showToolStripMenuItem";
-            this.showToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.showToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.showToolStripMenuItem.Text = "Показать";
             // 
             // treeView1
@@ -191,7 +203,7 @@
             this.MainTable.Name = "MainTable";
             this.MainTable.RowCount = 1;
             this.MainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.MainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.MainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 642F));
             this.MainTable.Size = new System.Drawing.Size(1169, 642);
             this.MainTable.TabIndex = 63;
             // 
@@ -230,18 +242,6 @@
             this.ErrorToolTip.ShowAlways = true;
             this.ErrorToolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.ErrorToolTip.ToolTipTitle = "Info";
-            // 
-            // ExitMenuItem
-            // 
-            this.ExitMenuItem.Name = "ExitMenuItem";
-            this.ExitMenuItem.Size = new System.Drawing.Size(162, 22);
-            this.ExitMenuItem.Text = "Выйти";
-            // 
-            // RenameMenuItem
-            // 
-            this.RenameMenuItem.Name = "RenameMenuItem";
-            this.RenameMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.RenameMenuItem.Text = "Переименовать вычисление";
             // 
             // Main
             // 

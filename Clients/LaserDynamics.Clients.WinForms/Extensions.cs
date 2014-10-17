@@ -32,5 +32,18 @@ namespace LaserDynamics.Clients.WinForms
         {
             lbl.Invoke(new SetText(t => { lbl.Text = t; }), text);
         }
+        delegate void AddControl(TableLayoutPanel lbl);
+        public static void AddControlInvoke(this Control control, TableLayoutPanel lbl)
+        {
+            //lbl.Invoke(new AddControl(t => { lbl.Controls.Add(t, 0, 2); }), control);
+            //control.Invoke(new AddControl(t => { t.Controls.Add(control, 0, 2); }), lbl);
+            var t = control.Handle;
+            control.Invoke(new MethodInvoker(() => {lbl.Controls.Add(control, 0, 2); }));
+        }
+        delegate void RemoveByKeyControl(string text);
+        public static void RemoveByKeyControlInvoke(this TableLayoutPanel lbl, string text)
+        {
+            lbl.Invoke(new RemoveByKeyControl(t => { lbl.Controls.RemoveByKey(t); }), text);
+        }
     }
 }

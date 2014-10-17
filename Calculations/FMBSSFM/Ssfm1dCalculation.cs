@@ -87,7 +87,7 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         }
         public object GetResult()
         {
-            if (Status != CalculationStatus.Running)
+            if (Status == CalculationStatus.Running)
                 return null;
             return Workspace.GetResult(View);
         }
