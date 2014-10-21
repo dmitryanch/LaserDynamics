@@ -1,31 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Jenyay.Mathematics;
+using System.Text;
+using System.Threading.Tasks;
 using System.Diagnostics;
 using LaserDynamics.Common;
 
-namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
+namespace LaserDynamics.Calculations.FMBSsfmLaserModel
 {
-    public class Ssfm1dCalculation : ICalculation
+    class Ssfm2dCalculation : ICalculation
     {
         public string CalculationId { get; set; }
-        public Ssfm1dCalculation()
+        public Ssfm2dCalculation()
         {
-            View = new Ssfm1dView();
-            Workspace = new Ssfm1dWorkspace();
+            View = new Ssfm2dView();
+            Workspace = new Ssfm2dWorkspace();
         }
-
-        #region Public Methods
+                
+        #region Public Properties
         public string Name { get; set; }
         public ICalculationView View { get; set; }
         public ICalculationWorkspace Workspace { get; set; }
+        public string ErrorMessage { get; set; }
+        public string ReportMessage { get; set; }
+        public CalculationStatus Status { get; set; }
+        public bool IsSaved { get; set; }
+        public string Path { get; set; }
         #endregion
 
         public void Calculate()
         {
             try
             {
-                var workspace = Workspace as Ssfm1dWorkspace;
+                var workspace = Workspace as Ssfm2dWorkspace;
 
                 workspace.Initialize(View);
                 if (!workspace.IsValid())
@@ -80,20 +87,18 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 }
             }
         }
-        public long[] GetStats()
-        {
-            var workspace = Workspace as Ssfm1dWorkspace;
-            return new long[3] { sumtimer.ElapsedMilliseconds, workspace.ffttimer.ElapsedMilliseconds, workspace.normtimer.ElapsedMilliseconds };
-        }
         public object GetResult()
         {
             if (Status == CalculationStatus.Running)
                 return null;
             return Workspace.GetResult(View);
         }
-        public string ErrorMessage { get; set; }
-        public string ReportMessage { get; set; }
-        public CalculationStatus Status { get; set; }
+        public long[] GetStats()
+        {
+            var workspace = Workspace as Ssfm2dWorkspace;
+            return new long[3] { sumtimer.ElapsedMilliseconds, workspace.ffttimer.ElapsedMilliseconds, workspace.normtimer.ElapsedMilliseconds };
+        }
+        
         public void OnCalculationStopped()
         {
             Status = CalculationStatus.Stopped;
@@ -107,8 +112,6 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         public event EventHandler OnCalculationValidationFailed;
         #endregion
 
-        public Stopwatch sumtimer = new Stopwatch();
-        public bool IsSaved { get; set; }
-        public string Path { get; set; }
+        Stopwatch sumtimer = new Stopwatch();
     }
 }

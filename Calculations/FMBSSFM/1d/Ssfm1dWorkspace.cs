@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
+namespace LaserDynamics.Calculations.FMBSsfmLaserModel
 {
     [Serializable]
     public class Ssfm1dWorkspace : ICalculationWorkspace
@@ -74,6 +74,8 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         double[] LocalInversion { get; set; }
         double[] LocalPhase { get; set; }
         Complex[] LocalPolarization { get; set; }
+
+        string InitialCondition { get; set; }
         #endregion
 
         #region Private Model Methods
@@ -119,13 +121,36 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
         }
         void SetInitials()
         {
-            for (int i = 0; i < Nx; i++)
+            switch (InitialCondition)
             {
-                E[i] = new Complex(Math.Sqrt(R[i] - 1 - Math.Pow(delta / (1 + Sigma[i]), 2)) * R[i] / r);
-                P[i] = new Complex(E[i].Re, -E[i].Re * delta / (1 + Sigma[i]));
-                D[i] = 1 + Math.Pow(delta / (1 + Sigma[i]), 2);
+                case "Around homogeneous solution":
+                    for (int i = 0; i < Nx; i++)
+                    {
+                        E[i] = new Complex(Math.Sqrt(R[i] - 1 - Math.Pow(delta / (1 + Sigma[i]), 2)) * R[i] / r);
+                        P[i] = new Complex(E[i].Re, -E[i].Re * delta / (1 + Sigma[i]));
+                        D[i] = 1 + Math.Pow(delta / (1 + Sigma[i]), 2);
+                    }
+                    E[0] = E[0] + 1e-10;
+                    break;
+                case "Around trivial solution":
+                    for (int i = 0; i < Nx; i++)
+                    {
+                        E[i] = new Complex(0);
+                        P[i] = new Complex(0);
+                        D[i] = 0;
+                    }
+                    E[0] = E[0] + 1e-10;
+                    break;
+                case "Small-amplitude white Noise":
+                    var rnd = new Random();
+                    for (int i = 0; i < Nx; i++)
+                    {
+                        E[i] = new Complex(rnd.Next(-100, 100)/100);
+                        P[i] = new Complex(rnd.Next(-100, 100) / 100);
+                        D[i] = rnd.Next(-100, 100) / 100;
+                    }
+                    break;
             }
-            E[0] = E[0] + 1e-10;
         }
         void SetExtraConstants()
         {
@@ -209,6 +234,8 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
             delta = view.Detuning;
             r = view.Pumping;
             a = view.Diffraction;
+
+            InitialCondition = view.InitialCondition;
 
             LocalField = view.OutLocalField ? new Complex[Nt] : null;
             LocalIntensity = view.OutLocalIntensity ? new double[Nt] : null;
@@ -315,11 +342,11 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                     Pc = Pj;
                     Dc = Dj;
                     normtimer.Stop();
-                    if (jj != j)
-                    {
-                        Console.WriteLine(j);
-                        jj = j;
-                    }
+                    //if (jj != j)
+                    //{
+                    //    Console.WriteLine(j);
+                    //    jj = j;
+                    //}
                     break;
                 }
                 else
@@ -382,17 +409,17 @@ namespace LaserDynamics.Calculations.FullMaxvellBlockSsfm
                 t[i] = dt*nt[i];
             return new
             {
-                OutFieldDistibution = view.OutFieldDistibution ? new CNumberResult{ X = x, Y = E } : null,
-                OutIntensityDistibution = view.OutIntensityDistibution ? new PlotResult{ X = x, Y = GetPow2Abs(E) } : null,
-                OutInversionDistibution = view.OutInversionDistibution ? new PlotResult { X = x, Y = D } : null,
-                OutLocalField = view.OutLocalField ? new CNumberResult { X = t, Y = LocalField } : null,
-                OutLocalIntensity = view.OutLocalIntensity ? new PlotResult { X = t, Y = LocalIntensity } : null,
-                OutLocalInversion = view.OutLocalInversion ? new PlotResult { X = t, Y = LocalInversion } : null,
-                OutLocalPhase = view.OutLocalPhase ? new PlotResult { X = t, Y = LocalPhase } : null,
-                OutLocalPolarization = view.OutLocalPolarization ? new CNumberResult { X = t, Y = LocalPolarization } : null,
-                OutPhaseDistibution = view.OutPhaseDistibution ? new PlotResult { X = x, Y = GetPhase(E) } : null,
-                OutPolarizationDistibution = view.OutPolarizationDistibution ? new CNumberResult { X = x, Y = P } : null,
-                OutSpectrumDistibution = view.OutSpectrumDistibution ? new PlotResult { X = x, Y = GetSpectrum(E) } : null
+                OutFieldDistibution = view.OutFieldDistibution ? new ComplexVectorResult{ X = x, Y = E } : null,
+                OutIntensityDistibution = view.OutIntensityDistibution ? new VectorResult{ X = x, Y = GetPow2Abs(E) } : null,
+                OutInversionDistibution = view.OutInversionDistibution ? new VectorResult { X = x, Y = D } : null,
+                OutLocalField = view.OutLocalField ? new ComplexVectorResult { X = t, Y = LocalField } : null,
+                OutLocalIntensity = view.OutLocalIntensity ? new VectorResult { X = t, Y = LocalIntensity } : null,
+                OutLocalInversion = view.OutLocalInversion ? new VectorResult { X = t, Y = LocalInversion } : null,
+                OutLocalPhase = view.OutLocalPhase ? new VectorResult { X = t, Y = LocalPhase } : null,
+                OutLocalPolarization = view.OutLocalPolarization ? new ComplexVectorResult { X = t, Y = LocalPolarization } : null,
+                OutPhaseDistibution = view.OutPhaseDistibution ? new VectorResult { X = x, Y = GetPhase(E) } : null,
+                OutPolarizationDistibution = view.OutPolarizationDistibution ? new ComplexVectorResult { X = x, Y = P } : null,
+                OutSpectrumDistibution = view.OutSpectrumDistibution ? new VectorResult { X = x, Y = GetSpectrum(E) } : null
             } as object;
         }
         #endregion

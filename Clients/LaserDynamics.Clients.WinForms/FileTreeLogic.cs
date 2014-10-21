@@ -10,11 +10,10 @@ namespace LaserDynamics.Clients.WinForms
 {
     partial class Main
     {
-        public void DriveTreeInit()
+        void FileTreeInit()
         {
             FileTreeView.BeforeExpand += (s, e) => OnBeforeExpand(s,e);
             FileTreeView.AfterExpand += (s, e) => OnAfteExpand(s, e);
-            FileTreeView.AfterSelect += (s, e) => OnAfterSelect(s, e);
             FileTreeView.AfterCollapse += (s, e) => OnAfterCollapse(s, e);
             string[] drivesArray = Directory.GetLogicalDrives();
 
@@ -35,7 +34,7 @@ namespace LaserDynamics.Clients.WinForms
         /// <summary>
         /// Получение списка каталогов
         /// </summary>
-        public void GetDirs(TreeNode node)
+        void GetDirs(TreeNode node)
         {
             DirectoryInfo[] diArray;
 
@@ -69,33 +68,30 @@ namespace LaserDynamics.Clients.WinForms
                 }
             }
         }
-        public void OnBeforeExpand(object sender, TreeViewCancelEventArgs e)
+        void OnBeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            FileTreeView.BeginUpdate();
+            var treeView = sender as TreeView;
+            treeView.BeginUpdate();
             foreach (TreeNode node in e.Node.Nodes)
             {
-                //ChooseImage(node);
-                GetDirs(node);
+                if(treeView == FileTreeView)
+                    GetDirs(node);
             }
-            FileTreeView.EndUpdate();
+            treeView.EndUpdate();
         }
-        public void OnAfteExpand(object sender, TreeViewEventArgs e)
+        void OnAfteExpand(object sender, TreeViewEventArgs e)
         {
-            FileTreeView.BeginUpdate();
+            var treeView = sender as TreeView;
+            treeView.BeginUpdate();
             ChooseImage(e.Node);
-            FileTreeView.EndUpdate();
+            treeView.EndUpdate();
         }
-        public void OnAfterSelect(object sender, TreeViewEventArgs e)
+        void OnAfterCollapse(object sender, TreeViewEventArgs e)
         {
-            FileTreeView.BeginUpdate();
+            var treeView = sender as TreeView;
+            treeView.BeginUpdate();
             ChooseImage(e.Node);
-            FileTreeView.EndUpdate();
-        }
-        public void OnAfterCollapse(object sender, TreeViewEventArgs e)
-        {
-            FileTreeView.BeginUpdate();
-            ChooseImage(e.Node);
-            FileTreeView.EndUpdate();
+            treeView.EndUpdate();
         }
         void ChooseImage(TreeNode node)
         {

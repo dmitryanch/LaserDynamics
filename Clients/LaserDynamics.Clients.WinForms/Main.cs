@@ -13,6 +13,7 @@ using LaserDynamics.Common;
 using System.IO;
 using ZedGraph;
 using System.Drawing.Imaging;
+using Jenyay.Mathematics;
 
 namespace LaserDynamics.Clients.WinForms
 {
@@ -35,7 +36,8 @@ namespace LaserDynamics.Clients.WinForms
             ExitMenuItem.Click += (s, e) => Exit();
             RenameMenuItem.Click += (s, e) => Rename();
             CalculationsTabControl.SelectedIndexChanged += (s, e) => OnSelectedPageChanged();
-            DriveTreeInit();
+            FileTreeInit();
+            ModelTreeInit();
         }
 
         #region UI - functions
@@ -135,12 +137,18 @@ namespace LaserDynamics.Clients.WinForms
         }
         void CreateDefault()
         {
-            IsSelectedIndexChanged = false;
+            
             string name = "Calculation " + CalculationsTabControl.TabPages.Count;
             var calc = _presenter.AddDefaultCalculation(name);
-            var newP = CreateNewTabPage(calc);
-            PushTabPage(newP);
-            IsSelectedIndexChanged = true;
+            Create(calc);
+        }
+        void CreateByTemplate(ICalculation calc)
+        {
+            string name = "Calculation " + CalculationsTabControl.TabPages.Count;
+            calc = _presenter.AddCalculationByTemplate(calc);
+            calc.Name = name;
+            Create(calc);
+            
         }
         void PushTabPage(TabPage page)
         {
@@ -161,8 +169,7 @@ namespace LaserDynamics.Clients.WinForms
         void OnModelChanged(TableLayoutPanel controlTable)
         {
             IsSelectedIndexChanged = false;
-            var name = CalculationsTabControl.SelectedTab.Name;
-            var table = CalculationsTabControl.SelectedTab.Controls[name];
+            var table = CalculationsTabControl.SelectedTab.Controls[0];
             var flowPanel = table.Controls["CalculationPanel"];
             if (flowPanel != null)
                 table.Controls.Remove(flowPanel);
@@ -180,6 +187,9 @@ namespace LaserDynamics.Clients.WinForms
                 .FirstOrDefault(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString() && c.View.NumMethod == numMethodCombo.SelectedItem.ToString());
             _presenter.ReplaceCalculation(_presenter.CurrentCalculation,template);
             var smallTable = CreateCalculationPanel(template.View);
+            var name = CalculationsTabControl.SelectedTab.Name;
+            SetCalculationEvents(name);
+            (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Ready");
             table.Controls.Add(smallTable);
             IsSelectedIndexChanged = true;
         }
@@ -188,8 +198,7 @@ namespace LaserDynamics.Clients.WinForms
             if (!IsSelectedIndexChanged)
                 return;
             IsSelectedIndexChanged = false;
-            var name = CalculationsTabControl.SelectedTab.Name;
-            var table = CalculationsTabControl.SelectedTab.Controls[name];
+            var table = CalculationsTabControl.SelectedTab.Controls[0];
             var flowPanel = table.Controls["CalculationPanel"];
             if (flowPanel != null)
                 table.Controls.Remove(flowPanel);
@@ -205,6 +214,9 @@ namespace LaserDynamics.Clients.WinForms
                 .FirstOrDefault(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString() && c.View.NumMethod == numMethodCombo.SelectedItem.ToString());
             _presenter.ReplaceCalculation(_presenter.CurrentCalculation, template);
             var smallTable = CreateCalculationPanel(template.View);
+            var name = CalculationsTabControl.SelectedTab.Name;
+            SetCalculationEvents(name);
+            (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Ready");
             table.Controls.Add(smallTable);
             IsSelectedIndexChanged = true;
         }
@@ -213,8 +225,7 @@ namespace LaserDynamics.Clients.WinForms
             if (!IsSelectedIndexChanged)
                 return;
             IsSelectedIndexChanged = false;
-            var name = CalculationsTabControl.SelectedTab.Name;
-            var table = CalculationsTabControl.SelectedTab.Controls[name];
+            var table = CalculationsTabControl.SelectedTab.Controls[0];
             var flowPanel = table.Controls["CalculationPanel"];
             if (flowPanel != null)
                 table.Controls.Remove(flowPanel);
@@ -227,6 +238,9 @@ namespace LaserDynamics.Clients.WinForms
                 .FirstOrDefault(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString() && c.View.NumMethod == numMethodCombo.SelectedItem.ToString());
             _presenter.ReplaceCalculation(_presenter.CurrentCalculation, template);
             var smallTable = CreateCalculationPanel(template.View);
+            var name = CalculationsTabControl.SelectedTab.Name;
+            SetCalculationEvents(name);
+            (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Ready");
             table.Controls.Add(smallTable);
             IsSelectedIndexChanged = true;
         }
@@ -314,7 +328,7 @@ namespace LaserDynamics.Clients.WinForms
             bigTable.Controls.Add(newLabel);
 
             var modelCombo = CreateComboBox("ModelTitle", _presenter.CalculationTypes
-                .Select(c => c.View.ModelTitle).ToArray());
+                .Select(c => c.View.ModelTitle).Distinct().ToArray());
             modelCombo.SelectedIndexChanged += (s, e) => OnModelChanged(bigTable);
             bigTable.Controls.Add(modelCombo);
             modelCombo.Anchor = AnchorStyles.Top & AnchorStyles.Bottom;
@@ -341,6 +355,7 @@ namespace LaserDynamics.Clients.WinForms
 
             ControlElements.Add(new KeyValuePair<string, Control[]>(id, new Control[] { StartBtn, StopBtn, CloseBtn, modelCombo, calcCombo, numMethodCombo }));
             SetControlEvent(id);
+            SetCalculationEvents(id);
             return topTable;
         }
         void SetControlEvent(string id)
@@ -360,12 +375,20 @@ namespace LaserDynamics.Clients.WinForms
             {
                 _presenter.StopCalculation();
             };
+            CloseBtn.Click += (s, e) => Close(id);
+        }
+        void SetCalculationEvents(string id)
+        {
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+            var StartBtn = controls.Value.FirstOrDefault(c => c.Name == "Start") as Button;
+            var StopBtn = controls.Value.FirstOrDefault(c => c.Name == "Stop") as Button;
+            
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationValidationFailed += (s, e) =>
-                {
-                    ReverseButtonsState(StartBtn, StopBtn);
-                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Validation Error."); 
-                    MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
-                };
+            {
+                ReverseButtonsState(StartBtn, StopBtn);
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Validation Error.");
+                MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
+            };
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationFinish += (s, e) =>
             {
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
@@ -403,8 +426,6 @@ namespace LaserDynamics.Clients.WinForms
                 var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
                 (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
             };
-            CloseBtn.Click += (s, e) => Close(id);
-            
         }
         TableLayoutPanel CreateResultsControlPanel(string id)
         {
@@ -459,7 +480,7 @@ namespace LaserDynamics.Clients.WinForms
                 switch (resAttr.DemoType)
                 {
                     case DemoType.Plot:
-                        var plot = CreatePlot(attr.Title, value);
+                        var plot = CreatePlot(attr.Title, value, resAttr.NumType);
                         if (plot == null)
                             continue;
                         //var group = CreateGroupBox(member.Name);
@@ -467,7 +488,8 @@ namespace LaserDynamics.Clients.WinForms
                         smallTable.Controls.Add(plot);
                         break;
                     case DemoType.Image:
-                        
+                        var picture = CreatePictureBox(attr.Title, value, resAttr.NumType);
+                        smallTable.Controls.Add(picture);
                         break;
                 }
             }
@@ -482,37 +504,11 @@ namespace LaserDynamics.Clients.WinForms
                 table.RowStyles[3] = new RowStyle(SizeType.Percent, 50F);
             }
         }
-        ZedGraphControl CreatePlot(string name, object obj)
+        
+        string CreateString(string name, object obj)
         {
-            var zedGraph = new ZedGraphControl();
-            zedGraph.Size = new System.Drawing.Size(500, 350);
-            //zedGraph.AutoSize = true;
-            zedGraph.Name = name;
-            zedGraph.GraphPane = new GraphPane();
-            // Создадим список точек
-            PointPairList list = new PointPairList();
-            var X = ((dynamic)obj).X;           // новый класс PlotResult
-            var Y = ((dynamic)obj).Y;
-            if (X == null || Y == null)
-                return null;
-            for (int i = 0; i < (X as Array).Length; i++)
-            {
-                list.Add(X[i], Y[i]);
-            }
-            // Создадим кривую с названием "Sinc", 
-            // которая будет рисоваться голубым цветом (Color.Blue),
-            // Опорные точки выделяться не будут (SymbolType.None)
-            LineItem myCurve = new LineItem(name, list, Color.Blue, SymbolType.None);
-            zedGraph.GraphPane.CurveList.Add(myCurve);
-            // Вызываем метод AxisChange (), чтобы обновить данные об осях. 
-            // В противном случае на рисунке будет показана только часть графика, 
-            // которая умещается в интервалы по осям, установленные по умолчанию
-            zedGraph.AxisChange();
-
-            // Обновляем график
-            zedGraph.Invalidate();
-            //zedGraph.Show();
-            return zedGraph;
+            string str = null;
+            return str;
         }
         void HideResults(string id)
         {
@@ -725,190 +721,6 @@ namespace LaserDynamics.Clients.WinForms
                         return true;
                     }
             }
-        }
-        #endregion
-
-        #region Controls creating  - methods
-        CheckedListBox CreateCheckListBox(string subgroup, string group)
-        {
-            var clb = new CheckedListBox();
-            clb.Name = subgroup;
-            clb.Dock = DockStyle.Fill;
-            clb.SelectionMode = SelectionMode.One;
-            clb.CheckOnClick = true;
-            clb.Leave += (s, e) =>
-            {
-                var dict = new Dictionary<string, string>();
-                for (int i = 0; i < clb.Items.Count;i++ )
-                    dict.Add(clb.Items[i].ToString(), clb.CheckedItems.Contains(clb.Items[i]).ToString());
-                SetValuesToView(dict, group, subgroup);
-            };
-            return clb;
-        }
-        Button CreateButton(string name)
-        {
-            var btn = new Button();
-            btn.Name = name;
-            btn.Text = name;
-            btn.AutoSize = true;
-            btn.Dock = DockStyle.None;
-            return btn;
-        }
-        ComboBox RefreshComboBoxItems(ComboBox combo, params string[] values)
-        {
-            combo.Items.Clear();
-            combo.Items.AddRange(values);
-            combo.SelectedIndex = 0;
-            return combo;
-        }
-        ComboBox CreateComboBox(string name, params string[] values)
-        {
-            var newCombo = new ComboBox();
-            newCombo.Name = name;
-            newCombo.Items.AddRange(values);
-            newCombo.SelectedIndex = 0;
-            newCombo.Dock = DockStyle.Fill;
-            int maxWidth = 0, temp = 0;
-            foreach (string s in newCombo.Items)
-            {
-                temp = TextRenderer.MeasureText(s, newCombo.Font).Width;
-                if (temp > maxWidth)
-                {
-                    maxWidth = temp;
-                }
-            }
-            newCombo.Width = maxWidth + SystemInformation.VerticalScrollBarWidth;
-            return newCombo;
-        }
-        TextBox CreateTextBox(string name)
-        {
-            var newTB = new TextBox();
-            newTB.Name = name;
-            newTB.Dock = DockStyle.Fill;
-            return newTB;
-        }
-        System.Windows.Forms.Label CreateLabel(string name)
-        {
-            var newLabel = new System.Windows.Forms.Label();
-            newLabel.Text = name;
-            newLabel.Dock = DockStyle.Fill;
-            newLabel.AutoSize = true;
-            newLabel.TextAlign = ContentAlignment.MiddleLeft;
-            newLabel.Margin = new Padding(10, 0, 0, 0);
-            return newLabel;
-        }
-        GroupBox CreateGroupBox(string name)
-        {
-            var group = new GroupBox();
-            group.Name = name;
-            group.Text = name;
-            group.AutoSize = true;
-            group.Dock = DockStyle.None;
-            return group;
-        }
-        TableLayoutPanel CreateTableLayoutPanel(string name, int rowCount, int ColumnCount)
-        {
-            var table = new TableLayoutPanel();
-            table.AutoSize = true;
-            table.ColumnCount = ColumnCount;
-            for (int i = 0; i < ColumnCount; i++)
-                table.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            table.RowCount = rowCount;
-            for (int i = 0; i < rowCount; i++)
-                table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            table.Name = name;
-            table.Dock = DockStyle.Fill;
-            table.AutoScroll = true;
-            return table;
-        }
-        FlowLayoutPanel CreateFlowLayoutPanel(string name)
-        {
-            var flowPanel = new FlowLayoutPanel();
-            flowPanel.AutoScroll = true;
-            flowPanel.Name = name;
-            flowPanel.WrapContents = true;
-            flowPanel.Dock = DockStyle.Fill;
-            return flowPanel;
-        }
-        #endregion
-
-        #region 2d-plot creating
-        void SaveAllImages(string id)
-        {
-            var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
-            var plots = table.Controls["CalculationResultsPanel"].Controls;
-
-            foreach (var plot in plots)
-            {
-                SaveFileDialog dlg = new SaveFileDialog();
-                dlg.Filter = "*.png|*.png|*.jpg; *.jpeg|*.jpg;*.jpeg|*.bmp|*.bmp|Все файлы|*.*";
-                dlg.FileName = (plot as ZedGraphControl).Name;
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    // Получием панель по ее индексу
-                    GraphPane pane = (plot as ZedGraphControl).MasterPane.PaneList[0];
-
-                    // Получаем картинку, соответствующую панели
-                    Bitmap bmp = pane.GetImage();
-
-                    // Сохраняем картинку средствами класса Bitmap
-                    // Формат картинки выбирается исходя из имени выбранного файла
-                    if (dlg.FileName.EndsWith(".png"))
-                    {
-                        bmp.Save(dlg.FileName, ImageFormat.Png);
-                    }
-                    else if (dlg.FileName.EndsWith(".jpg") || dlg.FileName.EndsWith(".jpeg"))
-                    {
-                        bmp.Save(dlg.FileName, ImageFormat.Jpeg);
-                    }
-                    else if (dlg.FileName.EndsWith(".bmp"))
-                    {
-                        bmp.Save(dlg.FileName, ImageFormat.Bmp);
-                    }
-                    else
-                    {
-                        bmp.Save(dlg.FileName);
-                    }
-                }
-            }
-        }
-        Bitmap CreateBitmap(double[,] arr,Color scheme)
-        {
-            int width = arr.GetLength(0);
-            int height = arr.GetLength(1);
-            
-            double max = 0;
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    if (max < arr[i, j])
-                        max = arr[i, j];
-
-            double min = 0;
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    if (min > arr[i, j])
-                        min = arr[i, j];
-
-            Bitmap image = new Bitmap(width, height);
-
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    image.SetPixel(i, j, GetColor(arr[i, j], min, max, scheme));
-                }
-            }
-            return image;
-        }
-        Color GetColor(double value, double min, double max, Color scheme)
-        {
-            return Color.FromArgb(GetRGB(value, min, max, scheme.R), GetRGB(value, min, max, scheme.G), GetRGB(value, min, max, scheme.B));
-        }
-        int GetRGB(double value, double min, double max, int colorCheme) // int GetRed/GetGreen/GetBlue( .., color-scheme)
-        {
-            if (min>max || value < min || value > max)
-                throw new Exception();
-            return (int)Math.Floor((value - min) / (max - min) * colorCheme);
         }
         #endregion
     }

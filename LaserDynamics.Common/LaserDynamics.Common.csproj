@@ -44,14 +44,12 @@
   <ItemGroup>
     <Compile Include="Attributes\DisplayTitleAttribute.cs" />
     <Compile Include="Attributes\ResultsTypeAttribute.cs" />
-    <Compile Include="Attributes\ValidateElementAttribute.cs" />
-    <Compile Include="CNumberResult.cs" />
+    <Compile Include="ResultClasses.cs" />
     <Compile Include="Interfaces\Client\ILaserCalculator.cs" />
     <Compile Include="Interfaces\Client\ILaserModelAccessor.cs" />
     <Compile Include="Interfaces\Service\ICalculation.cs" />
     <Compile Include="Interfaces\Service\ICalculationView.cs" />
     <Compile Include="Interfaces\Service\ICalculationWorkspace.cs" />
-    <Compile Include="PlotResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -45,10 +45,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="2d\Ssfm2dCalculation.cs" />
+    <Compile Include="2d\Ssfm2dView.cs" />
+    <Compile Include="2d\Ssfm2dWorkspace.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Ssfm1dCalculation.cs" />
-    <Compile Include="Ssfm1dView.cs" />
-    <Compile Include="Ssfm1dWorkspace.cs" />
+    <Compile Include="1d\Ssfm1dCalculation.cs" />
+    <Compile Include="1d\Ssfm1dView.cs" />
+    <Compile Include="1d\Ssfm1dWorkspace.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\LaserDynamics.Common\LaserDynamics.Common.csproj">
@@ -56,6 +59,7 @@
       <Name>LaserDynamics.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

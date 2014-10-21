@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Xml.Serialization;
 using LaserDynamics.Common;
-using LaserDynamics.Calculations.FullMaxvellBlockSsfm;
+using LaserDynamics.Calculations.FMBSsfmLaserModel;
 using System.ComponentModel;
 using LaserDynamics.Accessor;
 using Newtonsoft.Json;
@@ -133,11 +133,20 @@ namespace LaserDynamics.Clients.WinForms
             calc.CalculationId = Guid.NewGuid().ToString();
             CurrentCalculation = calc;
         }
+        public ICalculation AddCalculationByTemplate(ICalculation calc)
+        {
+            calc = calc.CloneCalculation();
+            OpenCalculations.Add(calc);
+            calc.CalculationId = Guid.NewGuid().ToString();
+            CurrentCalculation = calc;
+            return calc;
+        }
         public void ReplaceCalculation(ICalculation one, ICalculation byAnother)
         {
             OpenCalculations.Remove(one);
             var newCalc = byAnother.CloneCalculation();
             newCalc.Name = one.Name;
+            newCalc.CalculationId = one.CalculationId;
             CurrentCalculation = newCalc;
             OpenCalculations.Add(newCalc);
         }
