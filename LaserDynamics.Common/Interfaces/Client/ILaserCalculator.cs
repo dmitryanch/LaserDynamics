@@ -25,6 +25,10 @@ namespace LaserDynamics.Common
         Task StartCalculation();
         void ResumeCalculation();
         void StopCalculation();
-        void ShowResults();
+        object GetResults(string id);
+        ICalculation GetTemplate(string model, string calcType, string numMethod);
+        string[] GetNumMethods(string model, string calcType);
+        string[] GetCalcTypes(string model);
+        ICalculationView GetView(string id);
     }
 }

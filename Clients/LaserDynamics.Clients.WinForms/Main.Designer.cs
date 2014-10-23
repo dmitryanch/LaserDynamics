@@ -44,25 +44,25 @@
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TechSupportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FileTreeView = new System.Windows.Forms.TreeView();
             this.ImageList = new System.Windows.Forms.ImageList(this.components);
             this.ErrorToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.CalculationsTabControl = new System.Windows.Forms.TabControl();
             this.PlusTabPage = new System.Windows.Forms.TabPage();
             this.MainPanel = new System.Windows.Forms.Panel();
-            this.LeftPanel = new System.Windows.Forms.Panel();
-            this.splitter1 = new System.Windows.Forms.Splitter();
             this.RightPanel = new System.Windows.Forms.Panel();
-            this.splitter2 = new System.Windows.Forms.Splitter();
+            this.splitter1 = new System.Windows.Forms.Splitter();
+            this.LeftPanel = new System.Windows.Forms.Panel();
             this.ModelTreeView = new System.Windows.Forms.TreeView();
-            this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.TechSupportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitter2 = new System.Windows.Forms.Splitter();
             this.mainMenu.SuspendLayout();
             this.CalculationsTabControl.SuspendLayout();
             this.MainPanel.SuspendLayout();
-            this.LeftPanel.SuspendLayout();
             this.RightPanel.SuspendLayout();
+            this.LeftPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -74,7 +74,7 @@
             this.HelpToolStripMenuItem});
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
             this.mainMenu.Name = "mainMenu";
-            this.mainMenu.Size = new System.Drawing.Size(1169, 24);
+            this.mainMenu.Size = new System.Drawing.Size(1184, 24);
             this.mainMenu.TabIndex = 58;
             this.mainMenu.Text = "menuStrip1";
             // 
@@ -171,6 +171,27 @@
             this.showToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.showToolStripMenuItem.Text = "Показать";
             // 
+            // HelpToolStripMenuItem
+            // 
+            this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TechSupportToolStripMenuItem,
+            this.AboutToolStripMenuItem});
+            this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
+            this.HelpToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
+            this.HelpToolStripMenuItem.Text = "Помощь";
+            // 
+            // TechSupportToolStripMenuItem
+            // 
+            this.TechSupportToolStripMenuItem.Name = "TechSupportToolStripMenuItem";
+            this.TechSupportToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.TechSupportToolStripMenuItem.Text = "Тех. поддержка";
+            // 
+            // AboutToolStripMenuItem
+            // 
+            this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
+            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.AboutToolStripMenuItem.Text = "О программе";
+            // 
             // FileTreeView
             // 
             this.FileTreeView.Dock = System.Windows.Forms.DockStyle.Top;
@@ -179,7 +200,7 @@
             this.FileTreeView.Location = new System.Drawing.Point(0, 0);
             this.FileTreeView.Name = "FileTreeView";
             this.FileTreeView.SelectedImageIndex = 0;
-            this.FileTreeView.Size = new System.Drawing.Size(200, 252);
+            this.FileTreeView.Size = new System.Drawing.Size(140, 252);
             this.FileTreeView.TabIndex = 0;
             // 
             // ImageList
@@ -205,7 +226,7 @@
             this.CalculationsTabControl.Location = new System.Drawing.Point(0, 0);
             this.CalculationsTabControl.Name = "CalculationsTabControl";
             this.CalculationsTabControl.SelectedIndex = 0;
-            this.CalculationsTabControl.Size = new System.Drawing.Size(966, 642);
+            this.CalculationsTabControl.Size = new System.Drawing.Size(1041, 637);
             this.CalculationsTabControl.TabIndex = 1;
             // 
             // PlusTabPage
@@ -213,7 +234,7 @@
             this.PlusTabPage.Location = new System.Drawing.Point(4, 22);
             this.PlusTabPage.Name = "PlusTabPage";
             this.PlusTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.PlusTabPage.Size = new System.Drawing.Size(958, 616);
+            this.PlusTabPage.Size = new System.Drawing.Size(1033, 611);
             this.PlusTabPage.TabIndex = 1;
             this.PlusTabPage.Text = "   +";
             this.PlusTabPage.UseVisualStyleBackColor = true;
@@ -226,8 +247,25 @@
             this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainPanel.Location = new System.Drawing.Point(0, 24);
             this.MainPanel.Name = "MainPanel";
-            this.MainPanel.Size = new System.Drawing.Size(1169, 642);
+            this.MainPanel.Size = new System.Drawing.Size(1184, 637);
             this.MainPanel.TabIndex = 60;
+            // 
+            // RightPanel
+            // 
+            this.RightPanel.Controls.Add(this.CalculationsTabControl);
+            this.RightPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.RightPanel.Location = new System.Drawing.Point(143, 0);
+            this.RightPanel.Name = "RightPanel";
+            this.RightPanel.Size = new System.Drawing.Size(1041, 637);
+            this.RightPanel.TabIndex = 5;
+            // 
+            // splitter1
+            // 
+            this.splitter1.Location = new System.Drawing.Point(140, 0);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(3, 637);
+            this.splitter1.TabIndex = 4;
+            this.splitter1.TabStop = false;
             // 
             // LeftPanel
             // 
@@ -237,69 +275,31 @@
             this.LeftPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.LeftPanel.Location = new System.Drawing.Point(0, 0);
             this.LeftPanel.Name = "LeftPanel";
-            this.LeftPanel.Size = new System.Drawing.Size(200, 642);
+            this.LeftPanel.Size = new System.Drawing.Size(140, 637);
             this.LeftPanel.TabIndex = 3;
-            // 
-            // splitter1
-            // 
-            this.splitter1.Location = new System.Drawing.Point(200, 0);
-            this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 642);
-            this.splitter1.TabIndex = 4;
-            this.splitter1.TabStop = false;
-            // 
-            // RightPanel
-            // 
-            this.RightPanel.Controls.Add(this.CalculationsTabControl);
-            this.RightPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RightPanel.Location = new System.Drawing.Point(203, 0);
-            this.RightPanel.Name = "RightPanel";
-            this.RightPanel.Size = new System.Drawing.Size(966, 642);
-            this.RightPanel.TabIndex = 5;
-            // 
-            // splitter2
-            // 
-            this.splitter2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.splitter2.Location = new System.Drawing.Point(0, 252);
-            this.splitter2.Name = "splitter2";
-            this.splitter2.Size = new System.Drawing.Size(200, 3);
-            this.splitter2.TabIndex = 1;
-            this.splitter2.TabStop = false;
             // 
             // ModelTreeView
             // 
             this.ModelTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ModelTreeView.Location = new System.Drawing.Point(0, 255);
             this.ModelTreeView.Name = "ModelTreeView";
-            this.ModelTreeView.Size = new System.Drawing.Size(200, 387);
+            this.ModelTreeView.Size = new System.Drawing.Size(140, 382);
             this.ModelTreeView.TabIndex = 2;
             // 
-            // HelpToolStripMenuItem
+            // splitter2
             // 
-            this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.TechSupportToolStripMenuItem,
-            this.AboutToolStripMenuItem});
-            this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
-            this.HelpToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
-            this.HelpToolStripMenuItem.Text = "Помощь";
-            // 
-            // TechSupportToolStripMenuItem
-            // 
-            this.TechSupportToolStripMenuItem.Name = "TechSupportToolStripMenuItem";
-            this.TechSupportToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.TechSupportToolStripMenuItem.Text = "Тех. поддержка";
-            // 
-            // AboutToolStripMenuItem
-            // 
-            this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
-            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.AboutToolStripMenuItem.Text = "О программе";
+            this.splitter2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.splitter2.Location = new System.Drawing.Point(0, 252);
+            this.splitter2.Name = "splitter2";
+            this.splitter2.Size = new System.Drawing.Size(140, 3);
+            this.splitter2.TabIndex = 1;
+            this.splitter2.TabStop = false;
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1169, 666);
+            this.ClientSize = new System.Drawing.Size(1184, 661);
             this.Controls.Add(this.MainPanel);
             this.Controls.Add(this.mainMenu);
             this.Name = "Main";
@@ -308,8 +308,8 @@
             this.mainMenu.PerformLayout();
             this.CalculationsTabControl.ResumeLayout(false);
             this.MainPanel.ResumeLayout(false);
-            this.LeftPanel.ResumeLayout(false);
             this.RightPanel.ResumeLayout(false);
+            this.LeftPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

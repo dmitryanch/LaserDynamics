@@ -48,9 +48,10 @@ namespace LaserDynamics.Clients.WinForms
         {
             CurrentCalculation.OnCalculationStopped();
         }
-        public void ShowResults()
+        public object GetResults(string id)
         {
-
+            var calc = OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+            return calc.GetResult();
         }
         public void RemoveCalculation(string id)
         {
@@ -98,7 +99,6 @@ namespace LaserDynamics.Clients.WinForms
                         return null;
                     }
 
-                    
                     return calc;
                 }
             }
@@ -150,7 +150,22 @@ namespace LaserDynamics.Clients.WinForms
             CurrentCalculation = newCalc;
             OpenCalculations.Add(newCalc);
         }
-
+        public ICalculation GetTemplate(string model, string calcType, string numMethod)
+        {
+            return CalculationTypes.FirstOrDefault(c => c.View.ModelTitle == model && c.View.CalculationType == calcType && c.View.NumMethod == numMethod);
+        }
+        public string[] GetNumMethods(string model, string calcType)
+        {
+            return CalculationTypes.Where(c => c.View.ModelTitle == model && c.View.CalculationType == calcType).Select(c => c.View.NumMethod).ToArray();
+        }
+        public string[] GetCalcTypes(string model)
+        {
+            return CalculationTypes.Where(c => c.View.ModelTitle == model).Select(c => c.View.CalculationType).ToArray();
+        }
+        public ICalculationView GetView(string id)
+        {
+            return OpenCalculations.FirstOrDefault(c => c.CalculationId == id).View;
+        }
         public static bool TryDeserialize<T>(string json, ref T value)
         {
             try

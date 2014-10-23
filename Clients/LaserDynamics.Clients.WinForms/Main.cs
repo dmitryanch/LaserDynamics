@@ -22,7 +22,7 @@ namespace LaserDynamics.Clients.WinForms
         bool IsSelectedIndexChanged = true;
         bool IsExit = false;
         Presenter _presenter;
-        IList<KeyValuePair<string, Control[]>> ControlElements = new List<KeyValuePair<string, Control[]>>();
+        Dictionary<string, Control[]> ControlElements = new Dictionary<string, Control[]>();
         public Main()
         {
             InitializeComponent();
@@ -103,8 +103,7 @@ namespace LaserDynamics.Clients.WinForms
             if (!calc.IsSaved)
                 Save(calc);
             _presenter.RemoveCalculation(id);
-            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
-            ControlElements.Remove(controls);
+            ControlElements.Remove(id);
             var page = CalculationsTabControl.TabPages[id];
             int index = CalculationsTabControl.TabPages.IndexOf(page);
             CalculationsTabControl.TabPages.Remove(page);
@@ -166,87 +165,68 @@ namespace LaserDynamics.Clients.WinForms
         #endregion
 
         #region Event handlers for Combo controls selecting calculation types
-        void OnModelChanged(TableLayoutPanel controlTable)
+        void OnModelChanged(string id)
         {
             IsSelectedIndexChanged = false;
-            var table = CalculationsTabControl.SelectedTab.Controls[0];
-            var flowPanel = table.Controls["CalculationPanel"];
-            if (flowPanel != null)
-                table.Controls.Remove(flowPanel);
-            var modelCombo = (controlTable.Controls["ModelTitle"] as ComboBox);
-            var calcTypeCombo = (controlTable.Controls["CalculationType"] as ComboBox);
-            calcTypeCombo = RefreshComboBoxItems(calcTypeCombo, _presenter.CalculationTypes
-                .Where(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString())
-                .Select(c => c.View.CalculationType).ToArray());
-            var numMethodCombo = (controlTable.Controls["NumMethod"] as ComboBox);
-            numMethodCombo = RefreshComboBoxItems(numMethodCombo, _presenter.CalculationTypes
-                .Where(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString())
-                .Select(c => c.View.NumMethod).ToArray());
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+             
+            var modelCombo = controls.Value.FirstOrDefault(c => c.Name == "ModelTitle") as ComboBox;
+            var calcTypeCombo = controls.Value.FirstOrDefault(c => c.Name == "CalculationType") as ComboBox;
+            calcTypeCombo = RefreshComboBoxItems(calcTypeCombo, _presenter.GetCalcTypes(modelCombo.SelectedItem.ToString()));
+            var numMethodCombo = controls.Value.FirstOrDefault(c => c.Name == "NumMethod") as ComboBox;
+            numMethodCombo = RefreshComboBoxItems(numMethodCombo, _presenter.GetNumMethods(modelCombo.SelectedItem.ToString(), calcTypeCombo.SelectedItem.ToString()));
 
-            var template = _presenter.CalculationTypes
-                .FirstOrDefault(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString() && c.View.NumMethod == numMethodCombo.SelectedItem.ToString());
-            _presenter.ReplaceCalculation(_presenter.CurrentCalculation,template);
-            var smallTable = CreateCalculationPanel(template.View);
-            var name = CalculationsTabControl.SelectedTab.Name;
-            SetCalculationEvents(name);
-            (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Ready");
-            table.Controls.Add(smallTable);
+            ReplaceCalculationPanel(modelCombo.SelectedItem.ToString(), calcTypeCombo.SelectedItem.ToString(), numMethodCombo.SelectedItem.ToString());
             IsSelectedIndexChanged = true;
         }
-        void OnCalculationTypeChanged(TableLayoutPanel controlTable)
+        void OnCalculationTypeChanged(string id)
         {
             if (!IsSelectedIndexChanged)
                 return;
             IsSelectedIndexChanged = false;
-            var table = CalculationsTabControl.SelectedTab.Controls[0];
-            var flowPanel = table.Controls["CalculationPanel"];
-            if (flowPanel != null)
-                table.Controls.Remove(flowPanel);
 
-            var modelCombo = (controlTable.Controls["ModelTitle"] as ComboBox);
-            var calcTypeCombo = (controlTable.Controls["CalculationType"] as ComboBox);
-            var numMethodCombo = (controlTable.Controls["NumMethod"] as ComboBox);
-            numMethodCombo = RefreshComboBoxItems(numMethodCombo, _presenter.CalculationTypes
-                .Where(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString())
-                .Select(c => c.View.NumMethod).ToArray());
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
 
-            var template = _presenter.CalculationTypes
-                .FirstOrDefault(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString() && c.View.NumMethod == numMethodCombo.SelectedItem.ToString());
+            var modelCombo = controls.Value.FirstOrDefault(c => c.Name == "ModelTitle") as ComboBox;
+            var calcTypeCombo = controls.Value.FirstOrDefault(c => c.Name == "CalculationType") as ComboBox;
+            var numMethodCombo = controls.Value.FirstOrDefault(c => c.Name == "NumMethod") as ComboBox;
+            numMethodCombo = RefreshComboBoxItems(numMethodCombo, _presenter.GetNumMethods(modelCombo.SelectedItem.ToString(), calcTypeCombo.SelectedItem.ToString()));
+
+            ReplaceCalculationPanel(modelCombo.SelectedItem.ToString(), calcTypeCombo.SelectedItem.ToString(), numMethodCombo.SelectedItem.ToString());
+            IsSelectedIndexChanged = true;
+        }
+        void OnNumMethodChanged(string id)
+        {
+            if (!IsSelectedIndexChanged)
+                return;
+            IsSelectedIndexChanged = false;
+
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+
+            var modelCombo = controls.Value.FirstOrDefault(c => c.Name == "ModelTitle") as ComboBox;
+            var calcTypeCombo = controls.Value.FirstOrDefault(c => c.Name == "CalculationType") as ComboBox;
+            var numMethodCombo = controls.Value.FirstOrDefault(c => c.Name == "NumMethod") as ComboBox;
+            
+            ReplaceCalculationPanel(modelCombo.SelectedItem.ToString(), calcTypeCombo.SelectedItem.ToString(), numMethodCombo.SelectedItem.ToString());
+            IsSelectedIndexChanged = true;
+        }
+        void ReplaceCalculationPanel(string model,string calcType, string numMethod)
+        {
+            var template = _presenter.GetTemplate(model, calcType, numMethod);
             _presenter.ReplaceCalculation(_presenter.CurrentCalculation, template);
             var smallTable = CreateCalculationPanel(template.View);
             var name = CalculationsTabControl.SelectedTab.Name;
             SetCalculationEvents(name);
             (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Ready");
-            table.Controls.Add(smallTable);
-            IsSelectedIndexChanged = true;
-        }
-        void OnNumMethodChanged(TableLayoutPanel controlTable)
-        {
-            if (!IsSelectedIndexChanged)
-                return;
-            IsSelectedIndexChanged = false;
             var table = CalculationsTabControl.SelectedTab.Controls[0];
             var flowPanel = table.Controls["CalculationPanel"];
             if (flowPanel != null)
                 table.Controls.Remove(flowPanel);
-
-            var modelCombo = (controlTable.Controls["ModelTitle"] as ComboBox);
-            var calcTypeCombo = (controlTable.Controls["CalculationType"] as ComboBox);
-            var numMethodCombo = (controlTable.Controls["NumMethod"] as ComboBox);
-
-            var template = _presenter.CalculationTypes
-                .FirstOrDefault(c => c.View.ModelTitle == modelCombo.SelectedItem.ToString() && c.View.CalculationType == calcTypeCombo.SelectedItem.ToString() && c.View.NumMethod == numMethodCombo.SelectedItem.ToString());
-            _presenter.ReplaceCalculation(_presenter.CurrentCalculation, template);
-            var smallTable = CreateCalculationPanel(template.View);
-            var name = CalculationsTabControl.SelectedTab.Name;
-            SetCalculationEvents(name);
-            (CalculationsTabControl.TabPages[name].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Ready");
             table.Controls.Add(smallTable);
-            IsSelectedIndexChanged = true;
         }
         #endregion
 
-        #region Creating Tabpage and panel - methods
+        #region Creating TabPages & panel - methods
         TabPage CreateNewTabPage(ICalculation calc)
         {
             var newPage = new TabPage();
@@ -272,24 +252,9 @@ namespace LaserDynamics.Clients.WinForms
             tablePanel.Controls.Add(stateLabel, 0, 4);
             return newPage;
         }
-        void ReverseButtonsState(params Button[] btns)
-        {
-            foreach (var btn in btns)
-            {
-                btn.SetEnableInvoke(!btn.Enabled);
-                //string path = btn.Name + (btn.Enabled ? "Enable" : "Disable") + ".png";
-                //btn.Image = new Bitmap(path);
-            }
-        }
-        void CalculationSaved(ICalculation calc)
-        {
-            if (!calc.IsSaved)
-            {
-                calc.IsSaved = true;
-                CalculationsTabControl.TabPages[calc.CalculationId].Text = calc.Name;
-                //CalculationsTabControl.SelectedTab.();
-            }
-        }
+        #endregion
+
+        #region Creating Calculation panel - methods
         TableLayoutPanel CreateControlElementsPanel(string id)
         {
             var bigTable = CreateTableLayoutPanel("", 1, 8);
@@ -301,14 +266,14 @@ namespace LaserDynamics.Clients.WinForms
             topTable.AutoScroll = false;
             bigTable.AutoScroll = false;
             topTable.Controls.Add(bigTable);
-            
+
             var StartBtn = CreateButton("Start");
             StartBtn.Text = "";
-            StartBtn.Image = new Bitmap(@"startEnable.png"); 
+            StartBtn.Image = new Bitmap(@"startEnable.png");
             StartBtn.Size = new Size(28, 20);
             CalculationsTabControl.SelectedTab.Controls.Add(StartBtn);
             bigTable.Controls.Add(StartBtn);
-            
+
             var StopBtn = CreateButton("Stop");
             StopBtn.Text = "";
             StopBtn.Image = new Bitmap(@"stopEnable.png");
@@ -316,7 +281,7 @@ namespace LaserDynamics.Clients.WinForms
             StopBtn.Enabled = false;
             CalculationsTabControl.SelectedTab.Controls.Add(StopBtn);
             bigTable.Controls.Add(StopBtn);
-                       
+
             var CloseBtn = CreateButton("Close");
             CloseBtn.Text = "";
             CloseBtn.Image = new Bitmap(@"close.png");
@@ -329,7 +294,7 @@ namespace LaserDynamics.Clients.WinForms
 
             var modelCombo = CreateComboBox("ModelTitle", _presenter.CalculationTypes
                 .Select(c => c.View.ModelTitle).Distinct().ToArray());
-            modelCombo.SelectedIndexChanged += (s, e) => OnModelChanged(bigTable);
+            modelCombo.SelectedIndexChanged += (s, e) => OnModelChanged(id);
             bigTable.Controls.Add(modelCombo);
             modelCombo.Anchor = AnchorStyles.Top & AnchorStyles.Bottom;
 
@@ -339,7 +304,7 @@ namespace LaserDynamics.Clients.WinForms
             var calcCombo = CreateComboBox("CalculationType", _presenter.CalculationTypes
                 .Where(c => c.View.ModelTitle == modelCombo.Items[0].ToString())
                 .Select(c => c.View.CalculationType).ToArray());
-            calcCombo.SelectedIndexChanged += (s, e) => OnCalculationTypeChanged(bigTable);
+            calcCombo.SelectedIndexChanged += (s, e) => OnCalculationTypeChanged(id);
             calcCombo.Anchor = AnchorStyles.Top & AnchorStyles.Bottom;
             bigTable.Controls.Add(calcCombo);
 
@@ -349,173 +314,14 @@ namespace LaserDynamics.Clients.WinForms
             var numMethodCombo = CreateComboBox("NumMethod", _presenter.CalculationTypes
                 .Where(c => c.View.ModelTitle == modelCombo.Items[0].ToString() && c.View.CalculationType == calcCombo.Items[0].ToString())
                 .Select(c => c.View.NumMethod).ToArray());
-            numMethodCombo.SelectedIndexChanged += (s, e) => OnNumMethodChanged(bigTable);
+            numMethodCombo.SelectedIndexChanged += (s, e) => OnNumMethodChanged(id);
             numMethodCombo.Anchor = AnchorStyles.Top & AnchorStyles.Bottom;
             bigTable.Controls.Add(numMethodCombo);
 
-            ControlElements.Add(new KeyValuePair<string, Control[]>(id, new Control[] { StartBtn, StopBtn, CloseBtn, modelCombo, calcCombo, numMethodCombo }));
+            ControlElements.Add(id, new Control[] { StartBtn, StopBtn, CloseBtn, modelCombo, calcCombo, numMethodCombo });
             SetControlEvent(id);
             SetCalculationEvents(id);
             return topTable;
-        }
-        void SetControlEvent(string id)
-        {
-            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
-            var StartBtn = controls.Value.FirstOrDefault(c => c.Name == "Start") as Button;
-            var StopBtn = controls.Value.FirstOrDefault(c => c.Name == "Stop") as Button;
-            var CloseBtn = controls.Value.FirstOrDefault(c => c.Name == "Close") as Button;
-            
-            StartBtn.Click += async (s, e) =>
-            {
-                ReverseButtonsState(StartBtn, StopBtn);
-                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Started...");
-                await _presenter.StartCalculation();
-            };
-            StopBtn.Click += (s, e) =>
-            {
-                _presenter.StopCalculation();
-            };
-            CloseBtn.Click += (s, e) => Close(id);
-        }
-        void SetCalculationEvents(string id)
-        {
-            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
-            var StartBtn = controls.Value.FirstOrDefault(c => c.Name == "Start") as Button;
-            var StopBtn = controls.Value.FirstOrDefault(c => c.Name == "Stop") as Button;
-            
-            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationValidationFailed += (s, e) =>
-            {
-                ReverseButtonsState(StartBtn, StopBtn);
-                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Validation Error.");
-                MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
-            };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationFinish += (s, e) =>
-            {
-                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
-                var stateLabel = CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label;
-                if (calc.ErrorMessage != null)
-                {
-                    stateLabel.SetTextInvoke("Error: " + calc.ErrorMessage);
-                }
-                else if (calc.Status == CalculationStatus.Stopped)
-                {
-                    stateLabel.SetTextInvoke("Stopped.");
-                }
-                else
-                {
-                    stateLabel.SetTextInvoke("Succesefully performed: " + string.Join(", ", calc.GetStats().Select(st => st.ToString() + " ms")));
-                    this.Invoke(new MethodInvoker(() =>
-                    {
-                        HideResults(id);
-                        ShowResults(id);
-                    }));
-                }
-                ReverseButtonsState(StartBtn, StopBtn);
-            };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationError += (s, e) =>
-            {
-                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
-                if (calc.ErrorMessage != null)
-                {
-                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Error: " + calc.ErrorMessage);
-                }
-                ReverseButtonsState(StartBtn, StopBtn);
-            };
-            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationReport += (s, e) =>
-            {
-                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
-                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
-            };
-        }
-        TableLayoutPanel CreateResultsControlPanel(string id)
-        {
-            var table = CreateTableLayoutPanel("CalculationResultsControlPanel", 1, 3);
-            table.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, 100F);
-            var resultLabel = CreateLabel("Results");
-            var saveBtn = CreateButton("Save all results");
-            saveBtn.Click += (s, e) => SaveAllImages(id);
-            var CloseBtn = CreateButton("Close");
-            CloseBtn.Text = "";
-            CloseBtn.Image = new Bitmap(@"close.png");
-            CloseBtn.Size = new Size(20, 20);
-            CloseBtn.Click += (s, e) => HideResults(id);
-            table.Controls.Add(resultLabel, 0, 0);
-            table.Controls.Add(saveBtn, 1, 0);
-            table.Controls.Add(CloseBtn, 2, 0);
-
-            return table;
-        }
-        //FlowLayoutPanel CreateResultsPanel()
-        //{
-
-        //}
-        void ShowResults(string id)
-        {
-            var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
-            var view = calc.View;
-            var result = calc.GetResult();
-            if (result == null)
-                return;
-            var propDictionary = new Dictionary<string, object>();
-            foreach (var prop in result.GetType().GetProperties())
-            {
-                var value = prop.GetValue(result);
-                if (value != null)
-                    propDictionary.Add(prop.Name, value);
-            }
-            if (!propDictionary.Any())
-                return;
-            var smallTable = CreateFlowLayoutPanel("CalculationResultsPanel");
-            smallTable.Padding = new Padding(1, 1, 1, 1);
-            
-            foreach (var member in view.GetType().GetProperties())
-            {
-                var attr = (DisplayTitleAttribute)member.GetCustomAttribute(typeof(DisplayTitleAttribute));
-                var resAttr = (ResultsAttribute)member.GetCustomAttribute(typeof(ResultsAttribute));
-                if (attr == null || resAttr == null)
-                    continue; 
-                object value = null;
-                if(!propDictionary.TryGetValue(member.Name,out value))
-                    continue;
-                switch (resAttr.DemoType)
-                {
-                    case DemoType.Plot:
-                        var plot = CreatePlot(attr.Title, value, resAttr.NumType);
-                        if (plot == null)
-                            continue;
-                        //var group = CreateGroupBox(member.Name);
-                        //group.Controls.Add(plot);
-                        smallTable.Controls.Add(plot);
-                        break;
-                    case DemoType.Image:
-                        var picture = CreatePictureBox(attr.Title, value, resAttr.NumType);
-                        smallTable.Controls.Add(picture);
-                        break;
-                }
-            }
-            if (smallTable.Controls.Count > 0)
-            {
-                var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
-                table.RemoveByKeyControlInvoke("CalculationResultsPanel");
-                var controlPanel = CreateResultsControlPanel(id);
-                table.Controls.Add(controlPanel, 0, 2);
-                table.Controls.Add(smallTable, 0, 3);
-                table.RowStyles[1] = new RowStyle(SizeType.Percent, 50F);
-                table.RowStyles[3] = new RowStyle(SizeType.Percent, 50F);
-            }
-        }
-        
-        string CreateString(string name, object obj)
-        {
-            string str = null;
-            return str;
-        }
-        void HideResults(string id)
-        {
-            var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
-            table.Controls.RemoveByKey("CalculationResultsControlPanel"); 
-            table.Controls.RemoveByKey("CalculationResultsPanel");
-            table.RowStyles[1] = new RowStyle(SizeType.Percent, 100F);           
         }
         FlowLayoutPanel CreateCalculationPanel(ICalculationView tempate)
         {
@@ -654,6 +460,24 @@ namespace LaserDynamics.Clients.WinForms
             smallTable.Controls.AddRange(GroupBoxes.ToArray());
             return smallTable;
         }
+        void ReverseButtonsState(params Button[] btns)
+        {
+            foreach (var btn in btns)
+            {
+                btn.SetEnableInvoke(!btn.Enabled);
+                //string path = btn.Name + (btn.Enabled ? "Enable" : "Disable") + ".png";
+                //btn.Image = new Bitmap(path);
+            }
+        }
+        void CalculationSaved(ICalculation calc)
+        {
+            if (!calc.IsSaved)
+            {
+                calc.IsSaved = true;
+                CalculationsTabControl.TabPages[calc.CalculationId].Text = calc.Name;
+                //CalculationsTabControl.SelectedTab.();
+            }
+        }
         void CalculationChanged(ICalculation calc)
         {
             if (calc.IsSaved)
@@ -663,7 +487,223 @@ namespace LaserDynamics.Clients.WinForms
                 //CalculationsTabControl.SelectedTab.();
             }
         }
+        void SetControlEvent(string id)
+        {
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+            var StartBtn = controls.Value.FirstOrDefault(c => c.Name == "Start") as Button;
+            var StopBtn = controls.Value.FirstOrDefault(c => c.Name == "Stop") as Button;
+            var CloseBtn = controls.Value.FirstOrDefault(c => c.Name == "Close") as Button;
+            
+            StartBtn.Click += async (s, e) =>
+            {
+                ReverseButtonsState(StartBtn, StopBtn);
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Started...");
+                await _presenter.StartCalculation();
+            };
+            StopBtn.Click += (s, e) =>
+            {
+                _presenter.StopCalculation();
+            };
+            CloseBtn.Click += (s, e) => Close(id);
+        }
+        void SetCalculationEvents(string id)
+        {
+            var controls = ControlElements.FirstOrDefault(ce => ce.Key == id);
+            var StartBtn = controls.Value.FirstOrDefault(c => c.Name == "Start") as Button;
+            var StopBtn = controls.Value.FirstOrDefault(c => c.Name == "Stop") as Button;
+            
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationValidationFailed += (s, e) =>
+            {
+                ReverseButtonsState(StartBtn, StopBtn);
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Validation Error.");
+                MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
+            };
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationFinish += (s, e) =>
+            {
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+                var stateLabel = CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label;
+                if (calc.ErrorMessage != null)
+                {
+                    stateLabel.SetTextInvoke("Error: " + calc.ErrorMessage);
+                }
+                else if (calc.Status == CalculationStatus.Stopped)
+                {
+                    stateLabel.SetTextInvoke("Stopped.");
+                }
+                else
+                {
+                    stateLabel.SetTextInvoke("Succesefully performed: " + string.Join(", ", calc.GetStats().Select(st => st.ToString() + " ms")));
+                    this.Invoke(new MethodInvoker(() =>
+                    {
+                        HideResults(id);
+                        ShowResults(id);
+                    }));
+                }
+                ReverseButtonsState(StartBtn, StopBtn);
+            };
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationError += (s, e) =>
+            {
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+                if (calc.ErrorMessage != null)
+                {
+                    (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Error: " + calc.ErrorMessage);
+                }
+                ReverseButtonsState(StartBtn, StopBtn);
+            };
+            _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationReport += (s, e) =>
+            {
+                var calc = _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id);
+                (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Running: " + calc.ReportMessage + "%");
+            };
+        }
         #endregion
+
+        #region Creating CalculationResults panel - methods
+        TableLayoutPanel CreateResultsControlPanel(string id)
+        {
+            var table = CreateTableLayoutPanel("CalculationResultsControlPanel", 1, 3);
+            table.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, 100F);
+            var resultLabel = CreateLabel("Results");
+            var saveBtn = CreateButton("Save all results");
+            saveBtn.Click += (s, e) => SaveAllImages(id);
+            var CloseBtn = CreateButton("Close");
+            CloseBtn.Text = "";
+            CloseBtn.Image = new Bitmap(@"close.png");
+            CloseBtn.Size = new Size(20, 20);
+            CloseBtn.Click += (s, e) => HideResults(id);
+            table.Controls.Add(resultLabel, 0, 0);
+            table.Controls.Add(saveBtn, 1, 0);
+            table.Controls.Add(CloseBtn, 2, 0);
+
+            return table;
+        }
+        void ShowResults(string id)
+        {
+            var view = _presenter.GetView(id);
+            var result = _presenter.GetResults(id);
+            if (result == null)
+                return;
+            var propDictionary = new Dictionary<string, object>();
+            foreach (var prop in result.GetType().GetProperties())
+            {
+                var value = prop.GetValue(result);
+                if (value != null)
+                    propDictionary.Add(prop.Name, value);
+            }
+            if (!propDictionary.Any())
+                return;
+            var smallTable = CreateFlowLayoutPanel("CalculationResultsPanel");
+            smallTable.Padding = new Padding(1, 1, 1, 1);
+
+            foreach (var member in view.GetType().GetProperties())
+            {
+                var attr = (DisplayTitleAttribute)member.GetCustomAttribute(typeof(DisplayTitleAttribute));
+                var resAttr = (ResultsAttribute)member.GetCustomAttribute(typeof(ResultsAttribute));
+                if (attr == null || resAttr == null)
+                    continue;
+                object value = null;
+                if (!propDictionary.TryGetValue(member.Name, out value))
+                    continue;
+                Control ctrl = null;
+                switch (resAttr.DemoType)
+                {
+                    case DemoType.Plot:
+                        ctrl = CreatePlot(attr.Title, value, resAttr.NumType);
+                        if (ctrl == null)
+                            continue;
+                        //var group = CreateGroupBox(member.Name);
+                        //group.Controls.Add(plot);
+                        break;
+                    case DemoType.Image:
+                        var pict = CreatePictureBox(attr.Title, value, resAttr.NumType);
+                        pict.BorderStyle = BorderStyle.FixedSingle;
+                        ctrl = pict;
+                        break;
+                }
+                var saveNums = CreateButton("SaveAsFile");
+                saveNums.Click += (s, e) => SaveResultToFile(value, attr.Title +" " +  view.Overview);
+                var saveBmp = CreateButton("SaveAsBitMap");
+                var bmp = ctrl is ZedGraphControl ? (ctrl as ZedGraphControl).MasterPane.PaneList[0].GetImage() : (ctrl as PictureBox).Image as Bitmap;
+                saveBmp.Click += (s, e) => SaveResultAsBitMap(bmp, attr.Title + " " + view.Overview);
+                var btnTable = CreateTableLayoutPanel("btnTable", 1, 2);
+                btnTable.Controls.Add(saveNums, 0, 0);
+                btnTable.Controls.Add(saveBmp, 1, 0);
+                var plotTable = CreateTableLayoutPanel("plotTable", 2, 1);
+                plotTable.Controls.Add(btnTable, 0, 0);
+                plotTable.Controls.Add(ctrl, 0, 1);
+                smallTable.Controls.Add(plotTable);
+            }
+              
+            if (smallTable.Controls.Count > 0)
+            {
+                var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
+                table.RemoveByKeyControlInvoke("CalculationResultsPanel");
+                var controlPanel = CreateResultsControlPanel(id);
+                table.Controls.Add(controlPanel, 0, 2);
+                table.Controls.Add(smallTable, 0, 3);
+                table.RowStyles[1] = new RowStyle(SizeType.Percent, 50F);
+                table.RowStyles[3] = new RowStyle(SizeType.Percent, 50F);
+            }
+        }
+        void SaveResultAsBitMap(Bitmap bmp, string fileName)
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "*.png|*.png|*.jpg; *.jpeg|*.jpg;*.jpeg|*.bmp|*.bmp|Все файлы|*.*";
+            dlg.FileName = fileName;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                // Сохраняем картинку средствами класса Bitmap
+                // Формат картинки выбирается исходя из имени выбранного файла
+                if (dlg.FileName.EndsWith(".png"))
+                {
+                    bmp.Save(dlg.FileName, ImageFormat.Png);
+                }
+                else if (dlg.FileName.EndsWith(".jpg") || dlg.FileName.EndsWith(".jpeg"))
+                {
+                    bmp.Save(dlg.FileName, ImageFormat.Jpeg);
+                }
+                else if (dlg.FileName.EndsWith(".bmp"))
+                {
+                    bmp.Save(dlg.FileName, ImageFormat.Bmp);
+                }
+                else
+                {
+                    bmp.Save(dlg.FileName);
+                }
+            }
+        }
+        void SaveResultToFile(object value, string fileName)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = "clr files (*.clr)|*.clr|All files (*.*)|*.*";
+            dialog.RestoreDirectory = true;
+            dialog.FileName = fileName;
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                WriteToFile(value, dialog.FileName);
+            }
+        }
+        void WriteToFile(object value, string path)
+        {
+            string stringBody = null;
+            if (!Presenter.TrySerialize(value, out stringBody))
+            {
+                return;
+            }
+            using (StreamWriter file = new StreamWriter(path))
+            {
+                file.Write(stringBody);
+            }
+        }
+        void HideResults(string id)
+        {
+            var table = CalculationsTabControl.TabPages[id].Controls[0] as TableLayoutPanel;
+            table.Controls.RemoveByKey("CalculationResultsControlPanel");
+            table.Controls.RemoveByKey("CalculationResultsPanel");
+            table.RowStyles[1] = new RowStyle(SizeType.Percent, 100F);
+        }
+        #endregion
+
 
         #region Reflecting methods
         void SetValuesToView(Dictionary<string,string> namesValues, string group, string subgroup)

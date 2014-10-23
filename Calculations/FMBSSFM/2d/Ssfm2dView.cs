@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using LaserDynamics.Common;
 using Jenyay.Mathematics;
+using System.Globalization;
 
 namespace LaserDynamics.Calculations.FMBSsfmLaserModel
 {
@@ -16,12 +17,30 @@ namespace LaserDynamics.Calculations.FMBSsfmLaserModel
         static string _modelTitle = "Maxvell-Bloch";
         static string _calculationType = "Transverse dynamic (2d)";
         static string _numericalMethod = "SSFM";
-        static string[] _initialConditions = new string[4] { "Around homogeneous solution", "Around trivial solution", "Around square vortex lattice", "Small-amplitude white Noise" };
+        static string[] _initialConditions = new string[] { "Around homogeneous solution", "Around trivial solution", "Around square vortex lattice", "Small-amplitude white Noise" };
         string _initialCondition;
-        static string[] _boundaryConditions = new string[1] { "Periodic" };
+        static string[] _boundaryConditions = new string[] { "Periodic" };
         string _boundaryCondition;
 
         public string Title { get { return _title; } }
+        public string Overview
+        {
+            get
+            {
+                return String.Format("sigma={0}, gamma={1}, delta={2}, r={3}, a={4}, L={5}, Nx={6}, T={7}, dt={8}, (IC - {9}) (BC - {10})",
+                    (ElectricRelax / PolarizationRelax).ToString(CultureInfo.InvariantCulture),
+                    (InversionRelax / PolarizationRelax).ToString(CultureInfo.InvariantCulture),
+                    Detuning.ToString(CultureInfo.InvariantCulture),
+                    Pumping.ToString(CultureInfo.InvariantCulture),
+                    Diffraction.ToString(CultureInfo.InvariantCulture),
+                    ApertureSize.ToString(CultureInfo.InvariantCulture),
+                    NumNodes,
+                    (TimeStep * TotalTime).ToString(CultureInfo.InvariantCulture),
+                    TimeStep.ToString(CultureInfo.InvariantCulture),
+                    InitialCondition,
+                    BoundaryCondition);
+            }
+        }
         // Common
         public string ModelTitle { get { return _modelTitle; } }
         public string CalculationType { get { return _calculationType; } }
@@ -51,7 +70,7 @@ namespace LaserDynamics.Calculations.FMBSsfmLaserModel
         [DisplayTitle("Количество временных итераций, ед.", DataType.Integer, "Параметры схемы", 1, 1e6)]
         public int TotalTime { get; set; }
 
-        [DisplayTitle("Начальное условие", DataType.Discrete, "Условия", "", new string[4] { "Around homogeneous solution", "Around trivial solution", "Around square vortex lattice", "Small-amplitude white Noise" })]
+        [DisplayTitle("Начальное условие", DataType.Discrete, "Условия", "", new string[] { "Around homogeneous solution", "Around trivial solution", "Around square vortex lattice", "Small-amplitude white Noise" })]
         public string InitialCondition
         {
             get
@@ -62,7 +81,7 @@ namespace LaserDynamics.Calculations.FMBSsfmLaserModel
             { _initialCondition = value; }
         }
         public string[] InitialConditions { get { return _initialConditions; } }
-        [DisplayTitle("Граничное условие", DataType.Discrete, "Условия", "", new string[1] { "Periodic" })]
+        [DisplayTitle("Граничное условие", DataType.Discrete, "Условия", "", new string[] { "Periodic" })]
         public string BoundaryCondition
         {
             get

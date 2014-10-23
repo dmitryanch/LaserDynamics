@@ -8,6 +8,7 @@ namespace LaserDynamics.Common{
     public interface ICalculationView
     {
         string Title { get; }
+        string Overview { get; }
         string ModelTitle { get; }
         string CalculationType { get; }
         string NumMethod { get; }
