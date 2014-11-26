@@ -1,0 +1,5 @@
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\bin\Release\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\bin\Release\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\bin\Release\Complex.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\obj\Release\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\LaserDynamics.Common\obj\Release\LaserDynamics.Common.pdb

@@ -1,0 +1,8 @@
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Release\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Release\LaserDynamics.Accessors.pdb
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Release\LaserDynamics.Common.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Release\Complex.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\bin\Release\LaserDynamics.Common.pdb
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Release\LaserDynamics.Accessors.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Release\LaserDynamics.Accessors.dll
+C:\Projects\GitHub\LaserDynamics\Tools\LaserDynamics.Accessors\obj\Release\LaserDynamics.Accessors.pdb

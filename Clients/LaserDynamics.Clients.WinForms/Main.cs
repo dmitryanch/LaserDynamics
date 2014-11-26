@@ -20,7 +20,7 @@ namespace LaserDynamics.Clients.WinForms
     public partial class Main : Form
     {
         bool IsSelectedIndexChanged = true;
-        bool IsExit = false;
+        bool IsExitButtonClicked = false;
         Presenter _presenter;
         Dictionary<string, Control[]> ControlElements = new Dictionary<string, Control[]>();
         public Main()
@@ -38,6 +38,7 @@ namespace LaserDynamics.Clients.WinForms
             CalculationsTabControl.SelectedIndexChanged += (s, e) => OnSelectedPageChanged();
             FileTreeInit();
             ModelTreeInit();
+            FormClosing += (s, e) => Exit(e);
         }
 
         #region UI - functions
@@ -109,9 +110,9 @@ namespace LaserDynamics.Clients.WinForms
             CalculationsTabControl.TabPages.Remove(page);
             CalculationsTabControl.SelectTab(index - 1 > -1 ? index - 1 : 0);
         }
-        void Exit()
+        void Exit(FormClosingEventArgs e = null)
         {
-            IsExit = true;
+            IsExitButtonClicked = true;
             var notSavedCalc = _presenter.OpenCalculations.Where(c => !c.IsSaved).ToList();
             if (notSavedCalc == null || !notSavedCalc.Any())
             {
@@ -119,12 +120,17 @@ namespace LaserDynamics.Clients.WinForms
                 return;
             }
             var notSavedCalcsString = String.Join(",\n", notSavedCalc.Select(c => c.Name));
-            if (notSavedCalc != null && MessageBox.Show("Folowing calculations not saved:\n" + notSavedCalcsString + "\nSave changes?", "LaserDynamics", MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+            switch (MessageBox.Show("Folowing calculations not saved:\n" + notSavedCalcsString + "\nSave changes?", "LaserDynamics", MessageBoxButtons.YesNoCancel)) 
             {
+                case DialogResult.Yes:
                 foreach (var calc in notSavedCalc)
-                {
-                    Close(calc.CalculationId);
-                }
+                    {
+                        Close(calc.CalculationId);
+                    }
+                break;
+                case DialogResult.Cancel: if( e!=null) e.Cancel = true;
+                break;
+                default: break;
             }
         }
         void Create(ICalculation calc)
@@ -158,7 +164,7 @@ namespace LaserDynamics.Clients.WinForms
         }
         protected override void OnClosed(EventArgs e)
         {
-            if(!IsExit)
+            if(!IsExitButtonClicked)
                 Exit();
             base.OnClosed(e);
         }
@@ -460,13 +466,20 @@ namespace LaserDynamics.Clients.WinForms
             smallTable.Controls.AddRange(GroupBoxes.ToArray());
             return smallTable;
         }
-        void ReverseButtonsState(params Button[] btns)
+        void SetReadyButtonsState(bool state, params Button[] btns)
         {
             foreach (var btn in btns)
             {
-                btn.SetEnableInvoke(!btn.Enabled);
-                //string path = btn.Name + (btn.Enabled ? "Enable" : "Disable") + ".png";
-                //btn.Image = new Bitmap(path);
+                switch (btn.Name)
+                {
+                    case "start":
+                        btn.SetEnableInvoke(state);
+                        break;
+                    case "stop":
+                        btn.SetEnableInvoke(!state);
+                        break;
+                    default: break;
+                }
             }
         }
         void CalculationSaved(ICalculation calc)
@@ -496,12 +509,13 @@ namespace LaserDynamics.Clients.WinForms
             
             StartBtn.Click += async (s, e) =>
             {
-                ReverseButtonsState(StartBtn, StopBtn);
+                SetReadyButtonsState(false, StartBtn, StopBtn);
                 (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Started...");
                 await _presenter.StartCalculation();
             };
             StopBtn.Click += (s, e) =>
             {
+                StopBtn.Enabled = false;
                 _presenter.StopCalculation();
             };
             CloseBtn.Click += (s, e) => Close(id);
@@ -514,7 +528,7 @@ namespace LaserDynamics.Clients.WinForms
             
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationValidationFailed += (s, e) =>
             {
-                ReverseButtonsState(StartBtn, StopBtn);
+                SetReadyButtonsState(true, StartBtn, StopBtn);
                 (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Validation Error.");
                 MessageBox.Show("Не все поля заполнены корректно", "Validation Error");
             };
@@ -539,7 +553,7 @@ namespace LaserDynamics.Clients.WinForms
                         ShowResults(id);
                     }));
                 }
-                ReverseButtonsState(StartBtn, StopBtn);
+                SetReadyButtonsState(true, StartBtn, StopBtn);
             };
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationError += (s, e) =>
             {
@@ -548,7 +562,7 @@ namespace LaserDynamics.Clients.WinForms
                 {
                     (CalculationsTabControl.TabPages[id].Controls[0].Controls["StateLabel"] as System.Windows.Forms.Label).SetTextInvoke("Error: " + calc.ErrorMessage);
                 }
-                ReverseButtonsState(StartBtn, StopBtn);
+                SetReadyButtonsState(true, StartBtn, StopBtn);
             };
             _presenter.OpenCalculations.FirstOrDefault(c => c.CalculationId == id).OnCalculationReport += (s, e) =>
             {

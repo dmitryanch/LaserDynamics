@@ -30,11 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Complex">
-      <HintPath>..\..\..\Интеграция с МАТЛАБ\Jenyay\jenyay.mathematics\bin\Release\Complex.dll</HintPath>
+    <Reference Include="Complex, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Libs\jenyay.mathematics\Fourier\bin\Release\Complex.dll</HintPath>
     </Reference>
     <Reference Include="Fourier">
-      <HintPath>..\..\..\Интеграция с МАТЛАБ\Jenyay\jenyay.mathematics\bin\Release\Fourier.dll</HintPath>
+      <HintPath>..\..\..\..\Libs\jenyay.mathematics\Fourier\bin\Release\Fourier.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
